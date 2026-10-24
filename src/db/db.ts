@@ -4,6 +4,8 @@ export interface StudyAttempt {
   id?: number;
   questionId: string;
   sessionId: string;
+  /** Which paper the attempt came from: "set-a", "mock-1", "mistakes". Missing on early attempts. */
+  paperId?: string;
   mode: 'guided' | 'timed';
   answer: string;
   correct: boolean;
@@ -31,6 +33,23 @@ export interface WritingProgress {
 /** A character counts as learned after this many good from-memory recalls. */
 export const RECALLS_TO_LEARN = 2;
 
+/** An exam in progress, saved after every change so it can be resumed. */
+export interface ExamInProgress {
+  id: 'current';
+  paperId: string;
+  /** Question list for "My mistakes" papers, which aren't fixed. */
+  questionIds?: string[];
+  mode: 'guided' | 'timed';
+  sessionId: string;
+  startedAt: number;
+  sectionIndex: number;
+  answers: Record<string, string>;
+  locked: string[];
+  /** Time left in the current section (timed mode). The timer pauses while you're away. */
+  remainingMs?: number;
+  updatedAt: number;
+}
+
 export interface UserSettings {
   id: 'me';
   targetLevel: number;
@@ -52,6 +71,7 @@ export class AppDB extends Dexie {
   saved!: EntityTable<SavedItem, 'id'>;
   settings!: EntityTable<UserSettings, 'id'>;
   writing!: EntityTable<WritingProgress, 'char'>;
+  exam!: EntityTable<ExamInProgress, 'id'>;
 
   constructor(name = 'hsk-trainer') {
     super(name);
@@ -62,6 +82,9 @@ export class AppDB extends Dexie {
     });
     this.version(2).stores({
       writing: 'char, lastPracticed',
+    });
+    this.version(3).stores({
+      exam: 'id',
     });
   }
 }

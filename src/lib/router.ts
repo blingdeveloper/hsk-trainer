@@ -5,7 +5,8 @@ export type Route =
   | { name: 'home' }
   | { name: 'write' }
   | { name: 'entry'; word: string }
-  | { name: 'practice' }
+  | { name: 'practice'; resume?: boolean }
+  | { name: 'mistakes' }
   | { name: 'characters'; char?: string }
   | { name: 'licences' };
 
@@ -17,7 +18,9 @@ export function parseRoute(hash: string): Route {
     case 'entry':
       return arg ? { name: 'entry', word: decodeURIComponent(arg) } : { name: 'write' };
     case 'practice':
-      return { name: 'practice' };
+      return arg === 'resume' ? { name: 'practice', resume: true } : { name: 'practice' };
+    case 'mistakes':
+      return { name: 'mistakes' };
     case 'characters':
       return arg ? { name: 'characters', char: decodeURIComponent(arg) } : { name: 'characters' };
     case 'licences':
@@ -29,6 +32,7 @@ export function parseRoute(hash: string): Route {
 
 export function href(route: Route): string {
   if (route.name === 'entry') return `#/entry/${encodeURIComponent(route.word)}`;
+  if (route.name === 'practice' && route.resume) return '#/practice/resume';
   if (route.name === 'characters' && route.char) return `#/characters/${encodeURIComponent(route.char)}`;
   return `#/${route.name === 'home' ? '' : route.name}`;
 }

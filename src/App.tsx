@@ -5,6 +5,7 @@ import EntryView from './features/dictionary/EntryView';
 import ExamView from './features/exam/ExamView';
 import LicencesView from './features/licences/LicencesView';
 import CharactersView from './features/characters/CharactersView';
+import MistakesView from './features/exam/MistakesView';
 import { getSettings } from './db/db';
 
 const NAV: { route: Route; label: string; han: string }[] = [
@@ -37,7 +38,7 @@ function Home() {
       <div className="grid gap-4 md:grid-cols-3">
         <a href={href({ name: 'practice' })} className="card block hover:bg-blush md:p-6">
           <p className="font-medium">Exam practice →</p>
-          <p className="text-sm text-muted">3 sets of reading and writing questions in the official HSK 2 format. Guided or timed.</p>
+          <p className="text-sm text-muted">3 practice sets, 3 full mock exams and your mistake notebook, all in the official HSK 2 format.</p>
         </a>
         <a href={href({ name: 'characters' })} className="card block hover:bg-blush md:p-6">
           <p className="font-medium">Writing characters →</p>
@@ -90,7 +91,8 @@ export default function App() {
         </p>
         <ul className="mx-auto flex max-w-2xl md:mx-0 md:flex-col md:gap-1 md:px-3">
           {NAV.map((n) => {
-            const active = n.route.name === route.name || (route.name === 'entry' && n.route.name === 'write');
+            const active =
+              n.route.name === route.name || (route.name === 'entry' && n.route.name === 'write') || (route.name === 'mistakes' && n.route.name === 'practice');
             return (
               <li key={n.label} className="flex-1 md:flex-none">
                 <a
@@ -113,7 +115,8 @@ export default function App() {
           {route.name === 'home' && <Home />}
           {route.name === 'write' && <WriteView />}
           {route.name === 'entry' && <EntryView key={route.word} word={route.word} />}
-          {route.name === 'practice' && <ExamView />}
+          {route.name === 'practice' && <ExamView autoResume={route.resume} />}
+          {route.name === 'mistakes' && <MistakesView />}
           {route.name === 'characters' && <CharactersView key={route.char ?? ''} char={route.char} />}
           {route.name === 'licences' && <LicencesView />}
         </div>
