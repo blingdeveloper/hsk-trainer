@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import HanziWriter from 'hanzi-writer';
+import HanziWriter, { type CharacterJson } from 'hanzi-writer';
 import { assetUrl } from '../../lib/assets';
+
+/** Loads bundled stroke data for Hanzi Writer. Works offline once cached. */
+export function loadStrokeData(c: string): Promise<CharacterJson> {
+  return fetch(assetUrl(`packs/strokes/${c}.json`)).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`No stroke data for ${c}`))));
+}
 
 /** Stroke-order animation from bundled hanzi-writer-data (Arphic licence). */
 export default function StrokeOrder({ char, size = 160 }: { char: string; size?: number }) {
@@ -22,8 +27,7 @@ export default function StrokeOrder({ char, size = 160 }: { char: string; size?:
       outlineColor: '#eedfdf',
       delayBetweenStrokes: 250,
       charDataLoader: (c, onLoad, onError) => {
-        fetch(assetUrl(`packs/strokes/${c}.json`))
-          .then((r) => (r.ok ? r.json() : Promise.reject(new Error('missing'))))
+        loadStrokeData(c)
           .then(onLoad)
           .catch((err) => {
             setMissing(true);

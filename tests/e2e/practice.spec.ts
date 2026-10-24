@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { waitForOfflineReady } from './helpers';
 
 test('guided mode: check shows explanation and locks the answer', async ({ page }) => {
-  await page.goto('/#/practice');
+  await page.goto('./#/practice');
   await expect(page.getByText('Original practice').first()).toBeVisible();
   await page.getByRole('button', { name: /Guided/ }).click();
 
@@ -22,7 +22,7 @@ test('guided mode: check shows explanation and locks the answer', async ({ page 
 test('timed exam: score, review and history survive a reload, offline', async ({ page, context }) => {
   await waitForOfflineReady(page);
   await context.setOffline(true);
-  await page.goto('/#/practice');
+  await page.goto('./#/practice');
   await page.getByRole('button', { name: /Timed exam/ }).click();
   await expect(page.getByRole('timer')).toHaveText(/1[45]:\d\d/);
 
@@ -40,6 +40,17 @@ test('timed exam: score, review and history survive a reload, offline', async ({
   await expect(page.getByTestId('feedback').first()).toBeVisible();
 
   await page.reload();
-  await page.goto('/#/practice');
+  await page.goto('./#/practice');
   await expect(page.getByTestId('history')).toContainText('3/25');
+});
+
+test('can switch practice sets; each set has its own questions', async ({ page }) => {
+  await page.goto('./#/practice');
+  await page.getByRole('radio', { name: 'Practice set C' }).click();
+  await page.getByRole('button', { name: /Guided/ }).click();
+  await expect(page.getByText('Practice set C ·')).toBeVisible();
+  const q = page.getByTestId('q-c-r2-1');
+  await q.getByRole('radio', { name: 'B' }).click();
+  await q.getByRole('button', { name: 'Check' }).click();
+  await expect(q.getByTestId('feedback')).toContainText('Correct');
 });

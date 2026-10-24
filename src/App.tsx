@@ -4,12 +4,14 @@ import WriteView from './features/handwriting/WriteView';
 import EntryView from './features/dictionary/EntryView';
 import ExamView from './features/exam/ExamView';
 import LicencesView from './features/licences/LicencesView';
+import CharactersView from './features/characters/CharactersView';
 import { getSettings } from './db/db';
 
 const NAV: { route: Route; label: string; han: string }[] = [
   { route: { name: 'home' }, label: 'Home', han: '首页' },
-  { route: { name: 'write' }, label: 'Write', han: '手写' },
+  { route: { name: 'write' }, label: 'Lookup', han: '手写' },
   { route: { name: 'practice' }, label: 'Practice', han: '练习' },
+  { route: { name: 'characters' }, label: 'Characters', han: '汉字' },
   { route: { name: 'licences' }, label: 'Sources', han: '来源' },
 ];
 
@@ -34,7 +36,11 @@ function Home() {
       </header>
       <a href={href({ name: 'practice' })} className="card block hover:bg-blush">
         <p className="font-medium">Exam practice →</p>
-        <p className="text-sm text-muted">Reading and writing in the official HSK 2 format. Guided or timed.</p>
+        <p className="text-sm text-muted">3 sets of reading and writing questions in the official HSK 2 format. Guided or timed.</p>
+      </a>
+      <a href={href({ name: 'characters' })} className="card block hover:bg-blush">
+        <p className="font-medium">Writing characters →</p>
+        <p className="text-sm text-muted">Learn all 100 characters you must write for HSK 1–2: watch, trace, then write from memory.</p>
       </a>
       <a href={href({ name: 'write' })} className="card block hover:bg-blush">
         <p className="font-medium">Handwriting dictionary →</p>
@@ -69,6 +75,7 @@ export default function App() {
         {route.name === 'write' && <WriteView />}
         {route.name === 'entry' && <EntryView key={route.word} word={route.word} />}
         {route.name === 'practice' && <ExamView />}
+        {route.name === 'characters' && <CharactersView key={route.char ?? ''} char={route.char} />}
         {route.name === 'licences' && <LicencesView />}
       </main>
       <nav className="fixed inset-x-0 bottom-0 border-t border-line bg-paper/95 backdrop-blur" aria-label="Main">

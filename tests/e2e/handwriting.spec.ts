@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { drawStrokes, SHI, waitForOfflineReady } from './helpers';
 
 test('draw a character → choose candidate → dictionary entry', async ({ page }) => {
-  await page.goto('/#/write');
+  await page.goto('./#/write');
   await expect(page.getByText('Draw a character.')).toBeVisible();
   await drawStrokes(page, SHI);
   const candidate = page.getByTestId('candidate').filter({ hasText: /^十$/ });
@@ -23,7 +23,7 @@ test('draw a character → choose candidate → dictionary entry', async ({ page
 });
 
 test('clear and undo work', async ({ page }) => {
-  await page.goto('/#/write');
+  await page.goto('./#/write');
   await drawStrokes(page, SHI);
   await expect(page.getByTestId('candidate').first()).toBeVisible();
   await page.getByRole('button', { name: 'Undo stroke' }).click();
@@ -36,7 +36,7 @@ test('handwriting → dictionary → stroke order works with the network OFF', a
   await waitForOfflineReady(page);
   await context.setOffline(true);
 
-  await page.goto('/#/write');
+  await page.goto('./#/write');
   await page.reload(); // a full reload while offline proves the app shell is cached
   await drawStrokes(page, SHI);
   await page.getByTestId('candidate').filter({ hasText: /^十$/ }).click();

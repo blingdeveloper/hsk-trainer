@@ -1,4 +1,4 @@
-import type { Question, Skill } from '../../content/hsk2-practice';
+import type { Question, Skill } from '../../content/types';
 
 export type Answers = Record<string, string>;
 

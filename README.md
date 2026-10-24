@@ -31,6 +31,7 @@ npx playwright install chromium   # only needed for the browser tests
 | Serve the production build, offline mode included (http://localhost:4173) | `npm run preview` |
 | Unit tests | `npm test` |
 | Browser tests, including offline tests | `npm run test:e2e` |
+| Browser tests under a GitHub Pages sub-path | `BASE=/hsk-trainer/ npm run test:e2e` |
 
 Offline mode only works in the **production build** (`npm run build && npm run preview`), not in `npm run dev`. Open the app once while online and wait for "✓ Ready offline" on the Home screen. After that it works without internet.
 
@@ -43,7 +44,17 @@ Offline mode only works in the **production build** (`npm run build && npm run p
 | `src/features/dictionary/` | Dictionary loader, index and entry page |
 | `src/features/strokes/` | Stroke-order animation (Hanzi Writer) |
 | `src/features/exam/` | Practice/exam engine and scoring |
-| `src/content/hsk2-practice.ts` | **Original** practice questions, labelled as such |
+| `src/content/sets/` | **Original** practice sets A–C, labelled as such |
+| `src/content/types.ts` | Question types and official HSK 2 timing |
+| `src/features/characters/` | Writing trainer for the 100 HSK 1–2 writing characters |
+| `.github/workflows/deploy.yml` | Builds, tests and publishes to GitHub Pages on push to `main` |
 | `src/db/db.ts` | IndexedDB storage (attempts, saved items, settings) |
 | `scripts/build-data/` | Download and build scripts for the data packs |
 | `docs/` | Phase 0 proposal and milestone reports |
+
+## Deploying to GitHub Pages
+
+1. Create a **public** GitHub repository (for example `hsk-trainer`) and push this folder to its `main` branch.
+2. On GitHub, open the repository's **Settings → Pages** and set **Source** to **GitHub Actions**.
+3. Every push to `main` then runs the tests and publishes to `https://<your-username>.github.io/<repo>/`.
+4. On Android: open that link in Chrome, wait for "✓ Ready offline", then use **⋮ → Add to Home screen**.

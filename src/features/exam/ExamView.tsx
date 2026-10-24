@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  GROUPS,
   OFFICIAL_SECTIONS,
-  PRACTICE_META,
-  QUESTIONS,
+  ORIGINAL_LABEL,
   type Option,
+  type PracticeSet,
   type Question,
   type QuestionGroup,
   type Skill,
-} from '../../content/hsk2-practice';
+} from '../../content/types';
+import { SETS } from '../../content/sets';
 import { db } from '../../db/db';
 import HandwritingPad from '../handwriting/HandwritingPad';
 import { formatClock, isCorrect, scaledMinutes, scoreSections, type Answers } from './scoring';
@@ -19,16 +19,22 @@ type Phase = { kind: 'start' } | { kind: 'section'; index: number } | { kind: 'r
 const SECTIONS: Skill[] = ['reading', 'writing'];
 const SECTION_LABEL: Record<Skill, string> = { reading: 'Reading 阅读', writing: 'Writing 书写' };
 
-function questionsFor(skill: Skill) {
-  return QUESTIONS.filter((q) => q.skill === skill);
+function questionsFor(set: PracticeSet, skill: Skill) {
+  return set.questions.filter((q) => q.skill === skill);
 }
 
-function sectionMinutes(skill: Skill) {
-  return scaledMinutes(questionsFor(skill).length, OFFICIAL_SECTIONS[skill]);
+function sectionMinutes(set: PracticeSet, skill: Skill) {
+  return scaledMinutes(questionsFor(set, skill).length, OFFICIAL_SECTIONS[skill]);
+}
+
+/** Question ids start with the set id ("b-r2-1"). */
+function setTitleFor(questionId: string) {
+  return SETS.find((s) => questionId.startsWith(`${s.id}-`))?.title ?? 'Practice';
 }
 
 interface PastSession {
   sessionId: string;
+  setTitle: string;
   mode: string;
   correct: number;
   total: number;
@@ -39,7 +45,7 @@ async function loadHistory(): Promise<PastSession[]> {
   const attempts = await db.attempts.orderBy('timestamp').reverse().toArray();
   const sessions = new Map<string, PastSession>();
   for (const a of attempts) {
-    const s = sessions.get(a.sessionId) ?? { sessionId: a.sessionId, mode: a.mode, correct: 0, total: 0, timestamp: a.timestamp };
+    const s = sessions.get(a.sessionId) ?? { sessionId: a.sessionId, setTitle: setTitleFor(a.questionId), mode: a.mode, correct: 0, total: 0, timestamp: a.timestamp };
     s.total++;
     if (a.correct) s.correct++;
     sessions.set(a.sessionId, s);
@@ -48,6 +54,7 @@ async function loadHistory(): Promise<PastSession[]> {
 }
 
 export default function ExamView() {
+  const [set, setSet] = useState<PracticeSet>(SETS[0]);
   const [mode, setMode] = useState<Mode>('guided');
   const [phase, setPhase] = useState<Phase>({ kind: 'start' });
   const [answers, setAnswers] = useState<Answers>({});
@@ -106,7 +113,7 @@ export default function ExamView() {
       // A fast double-click or the timer firing right after a click must not save twice.
       if (submittedSections.current.has(index)) return;
       submittedSections.current.add(index);
-      const qs = questionsFor(SECTIONS[index]).filter((q) => !locked.has(q.id));
+      const qs = questionsFor(set, SECTIONS[index]).filter((q) => !locked.has(q.id));
       setLocked((prev) => {
         const next = new Set(prev);
         qs.forEach((q) => next.add(q.id));
@@ -116,27 +123,41 @@ export default function ExamView() {
       setPhase(index + 1 < SECTIONS.length ? { kind: 'section', index: index + 1 } : { kind: 'review' });
       window.scrollTo(0, 0);
     },
-    [locked, answers, record],
+    [set, locked, answers, record],
   );
 
   if (phase.kind === 'start') {
     return (
       <div className="space-y-4">
         <header>
-          <h1 className="text-2xl font-semibold">{PRACTICE_META.title}</h1>
+          <h1 className="text-2xl font-semibold">HSK 2 exam practice</h1>
           <p className="mt-1 text-sm">
-            <span className="tag">Original practice</span> <span className="text-muted">{PRACTICE_META.label}</span>
+            <span className="tag">Original practice</span> <span className="text-muted">{ORIGINAL_LABEL}</span>
           </p>
         </header>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Practice set">
+          {SETS.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              role="radio"
+              aria-checked={s.id === set.id}
+              onClick={() => setSet(s)}
+              className={`rounded-xl border px-4 py-2 min-h-11 ${s.id === set.id ? 'border-rose bg-blush' : 'border-line bg-card'}`}
+            >
+              {s.title}
+            </button>
+          ))}
+        </div>
         <section className="card space-y-2 text-sm">
           <p>
             <strong>Official HSK 3.0 Level 2 format</strong> (from the CTI sample paper): Listening 25 questions (~17 min), Reading 25 (25 min),
             Writing 10 (10 min). About 60 minutes in total.
           </p>
           <p className="text-muted">
-            This set has Reading Parts 2–4 ({questionsFor('reading').length} questions) and Writing Parts 1–2 ({questionsFor('writing').length}{' '}
+            This set has Reading Parts 2–4 ({questionsFor(set, 'reading').length} questions) and Writing Parts 1–2 ({questionsFor(set, 'writing').length}{' '}
             questions). Listening and Reading Part 1 need audio or pictures, which aren't licensed yet. Timed mode scales the official
-            time per question: reading {sectionMinutes('reading')} min, writing {sectionMinutes('writing')} min.
+            time per question: reading {sectionMinutes(set, 'reading')} min, writing {sectionMinutes(set, 'writing')} min.
           </p>
           <p className="text-muted">Scores are raw counts. CTI hasn't published the scaled scores or pass mark for the new HSK 2.</p>
         </section>
@@ -157,7 +178,7 @@ export default function ExamView() {
               {history.map((s) => (
                 <li key={s.sessionId} className="flex justify-between">
                   <span>
-                    {new Date(s.timestamp).toLocaleString()} · {s.mode}
+                    {new Date(s.timestamp).toLocaleString()} · {s.setTitle} · {s.mode}
                   </span>
                   <span>
                     {s.correct}/{s.total}
@@ -172,14 +193,14 @@ export default function ExamView() {
   }
 
   if (phase.kind === 'review') {
-    const scores = scoreSections(QUESTIONS, answers);
+    const scores = scoreSections(set.questions, answers);
     const correct = scores.reduce((n, s) => n + s.correct, 0);
     return (
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold">Review</h1>
         <section className="card" data-testid="score">
           <p className="text-3xl font-semibold">
-            {correct} / {QUESTIONS.length}
+            {correct} / {set.questions.length}
           </p>
           <ul className="mt-2 text-sm text-muted">
             {scores.map((s) => (
@@ -191,7 +212,7 @@ export default function ExamView() {
           <p className="mt-2 text-xs text-muted">Raw score on original practice questions. This doesn't predict your official result.</p>
         </section>
         {SECTIONS.map((skill) => (
-          <SectionBody key={skill} skill={skill} answers={answers} locked={new Set(QUESTIONS.map((q) => q.id))} showFeedback />
+          <SectionBody key={skill} set={set} skill={skill} answers={answers} locked={new Set(set.questions.map((q) => q.id))} showFeedback />
         ))}
         <button type="button" className="btn-primary" onClick={() => setPhase({ kind: 'start' })}>
           Back to start
@@ -201,7 +222,7 @@ export default function ExamView() {
   }
 
   const skill = SECTIONS[phase.index];
-  const qs = questionsFor(skill);
+  const qs = questionsFor(set, skill);
   const answeredCount = qs.filter((q) => answers[q.id]).length;
 
   return (
@@ -210,15 +231,16 @@ export default function ExamView() {
         <div>
           <p className="font-medium">{SECTION_LABEL[skill]}</p>
           <p className="text-xs text-muted">
-            {answeredCount}/{qs.length} answered · {mode === 'timed' ? 'Timed exam' : 'Guided'} · <span className="text-rose">Original practice</span>
+            {set.title} · {answeredCount}/{qs.length} answered · {mode === 'timed' ? 'Timed exam' : 'Guided'} · <span className="text-rose">Original practice</span>
           </p>
         </div>
         {mode === 'timed' && (
-          <SectionTimer key={skill} minutes={sectionMinutes(skill)} onExpire={() => submitSection(phase.index)} />
+          <SectionTimer key={skill} minutes={sectionMinutes(set, skill)} onExpire={() => submitSection(phase.index)} />
         )}
       </header>
 
       <SectionBody
+        set={set}
         skill={skill}
         answers={answers}
         locked={locked}
@@ -257,6 +279,7 @@ function SectionTimer({ minutes, onExpire }: { minutes: number; onExpire: () => 
 }
 
 interface SectionProps {
+  set: PracticeSet;
   skill: Skill;
   answers: Answers;
   locked: Set<string>;
@@ -265,19 +288,19 @@ interface SectionProps {
   onCheck?: (q: Question) => void;
 }
 
-function SectionBody({ skill, answers, locked, showFeedback, onAnswer, onCheck }: SectionProps) {
-  const groups = GROUPS.filter((g) => g.skill === skill);
+function SectionBody({ set, skill, answers, locked, showFeedback, onAnswer, onCheck }: SectionProps) {
+  const groups = set.groups.filter((g) => g.skill === skill);
   return (
     <div className="space-y-4">
       {groups.map((g) => (
-        <GroupBlock key={g.id} group={g} {...{ answers, locked, showFeedback, onAnswer, onCheck }} />
+        <GroupBlock key={g.id} group={g} {...{ set, answers, locked, showFeedback, onAnswer, onCheck }} />
       ))}
     </div>
   );
 }
 
 function GroupBlock({ group, ...rest }: Omit<SectionProps, 'skill'> & { group: QuestionGroup }) {
-  const qs = QUESTIONS.filter((q) => q.groupId === group.id);
+  const qs = rest.set.questions.filter((q) => q.groupId === group.id);
   return (
     <section className="card space-y-4">
       <div>

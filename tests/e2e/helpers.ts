@@ -23,7 +23,7 @@ export const SHI: [number, number][][] = [
 
 /** Waits until the service worker controls the page, so everything is cached. */
 export async function waitForOfflineReady(page: Page) {
-  await page.goto('/');
+  await page.goto('./');
   await expect(page.getByTestId('offline-status')).toContainText('Ready offline', { timeout: 30_000 });
   await page.reload();
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { QUESTIONS } from '../../src/content/hsk2-practice';
+import { SETS } from '../../src/content/sets';
+
+const QUESTIONS = SETS.flatMap((s) => s.questions);
 import { formatClock, isCorrect, scaledMinutes, scoreSections } from '../../src/features/exam/scoring';
 
 describe('scoring', () => {
