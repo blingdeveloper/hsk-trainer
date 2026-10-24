@@ -27,6 +27,10 @@ export default function WritingQuiz({ char, mode, size = 260, onFinish }: Props)
   const [done, setDone] = useState(false);
   const [error, setError] = useState(false);
   const [run, setRun] = useState(0);
+  /** Key of the quiz that has loaded its data and accepts input. Compared per render, so it is never stale. */
+  const quizKey = `${char}|${mode}|${size}|${run}`;
+  const [readyKey, setReadyKey] = useState('');
+  const ready = readyKey === quizKey;
 
   useEffect(() => {
     const el = ref.current;
@@ -35,6 +39,8 @@ export default function WritingQuiz({ char, mode, size = 260, onFinish }: Props)
     setMistakes(0);
     setDone(false);
     setError(false);
+    // Ignore callbacks from a quiz this effect has already replaced.
+    let live = true;
     const writer = HanziWriter.create(el, char, {
       width: size,
       height: size,
@@ -58,20 +64,24 @@ export default function WritingQuiz({ char, mode, size = 260, onFinish }: Props)
     if (mode === 'watch') {
       void writer.animateCharacter();
     } else {
-      void writer.quiz({
-        showHintAfterMisses: mode === 'memory' ? 3 : 1,
-        onMistake: () => setMistakes((m) => m + 1),
-        onComplete: ({ totalMistakes }) => {
-          setDone(true);
-          onFinishRef.current?.(totalMistakes);
-        },
-      });
+      writer
+        .quiz({
+          showHintAfterMisses: mode === 'memory' ? 3 : 1,
+          onMistake: () => live && setMistakes((m) => m + 1),
+          onComplete: ({ totalMistakes }) => {
+            if (!live) return;
+            setDone(true);
+            onFinishRef.current?.(totalMistakes);
+          },
+        })
+        .then(() => live && setReadyKey(quizKey));
     }
     return () => {
+      live = false;
       writer.cancelQuiz();
       writerRef.current = null;
     };
-  }, [char, mode, size, run]);
+  }, [char, mode, size, run, quizKey]);
 
   if (error) return <p className="text-bad">No stroke data for {char}.</p>;
 
@@ -80,6 +90,7 @@ export default function WritingQuiz({ char, mode, size = 260, onFinish }: Props)
       <div
         ref={ref}
         data-testid="writing-quiz"
+        data-ready={mode === 'watch' || ready}
         className="rounded-2xl border border-line bg-card shadow-sm"
         style={{ width: size, height: size, touchAction: 'none', backgroundImage: GRID, backgroundSize: '100% 100%' }}
       />

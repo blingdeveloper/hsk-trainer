@@ -227,7 +227,7 @@ export default function ExamView() {
 
   return (
     <div className="space-y-4">
-      <header className="sticky top-0 z-10 -mx-4 flex items-center justify-between border-b border-line bg-paper/95 px-4 py-2 backdrop-blur">
+      <header className="sticky top-0 z-10 -mx-4 flex items-center justify-between border-b border-line bg-paper/95 px-4 py-2 backdrop-blur md:mx-0 md:rounded-b-xl md:px-5">
         <div>
           <p className="font-medium">{SECTION_LABEL[skill]}</p>
           <p className="text-xs text-muted">
@@ -308,7 +308,7 @@ function GroupBlock({ group, ...rest }: Omit<SectionProps, 'skill'> & { group: Q
         <p className="text-sm">{group.instructions}</p>
       </div>
       {group.options && (
-        <ul className="grid grid-cols-1 gap-x-4 gap-y-1 rounded-xl bg-paper p-3 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-x-4 gap-y-1 rounded-xl bg-paper p-3 sm:grid-cols-2 lg:grid-cols-3">
           {group.options.map((o) => (
             <li key={o.key} className="han">
               <span className="font-sans font-semibold">{o.key}</span> {o.text}{' '}

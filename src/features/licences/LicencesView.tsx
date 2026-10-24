@@ -61,7 +61,7 @@ export default function LicencesView() {
           They are not official HSK questions.
         </p>
       </header>
-      <ul className="space-y-3">
+      <ul className="grid gap-3 md:grid-cols-2">
         {SOURCES.map((s) => (
           <li key={s.name} className="card text-sm">
             <h2 className="font-medium text-base">{s.name}</h2>

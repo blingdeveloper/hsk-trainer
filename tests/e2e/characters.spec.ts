@@ -3,7 +3,9 @@ import { waitForOfflineReady } from './helpers';
 
 /** Draws 一 (one horizontal stroke) on the Hanzi Writer quiz. */
 async function writeYi(page: Page) {
-  const box = (await page.getByTestId('writing-quiz').boundingBox())!;
+  const quiz = page.getByTestId('writing-quiz');
+  await expect(quiz).toHaveAttribute('data-ready', 'true');
+  const box = (await quiz.boundingBox())!;
   await page.mouse.move(box.x + box.width * 0.12, box.y + box.height * 0.5);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.88, box.y + box.height * 0.5, { steps: 15 });
@@ -47,6 +49,8 @@ test('a session walks through 10 characters and shows a summary', async ({ page 
   await page.goto('./#/characters');
   await page.getByRole('button', { name: 'Practise next 10' }).click();
   await expect(page.getByText('Character 1 / 10')).toBeVisible();
-  for (let i = 0; i < 10; i++) await page.getByTestId('session-next').click();
+  // The Next button sits beside the pad on wide screens and under it on phones.
+  const next = page.locator('[data-testid^="session-next"]:visible');
+  for (let i = 0; i < 10; i++) await next.click();
   await expect(page.getByTestId('session-summary')).toContainText('0 / 10');
 });

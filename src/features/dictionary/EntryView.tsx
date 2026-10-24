@@ -36,7 +36,8 @@ export default function EntryView({ word }: { word: string }) {
         ← Draw another character
       </a>
 
-      <section className="card">
+      <div className="grid items-start gap-4 md:grid-cols-2">
+      <section className="card md:p-6">
         <div className="flex flex-wrap items-start gap-5">
           <div className="flex-1 min-w-0">
             <h1 className="han text-5xl leading-tight" data-testid="entry-headword">
@@ -107,7 +108,7 @@ export default function EntryView({ word }: { word: string }) {
           {compounds.length === 0 ? (
             <p className="mt-3 text-muted">No words in the offline pack.</p>
           ) : (
-            <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2" data-testid="compound-list">
+            <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2" data-testid="compound-list">
               {compounds.map((w) => {
                 const first = dict.lookup(w)[0];
                 return (
@@ -124,6 +125,8 @@ export default function EntryView({ word }: { word: string }) {
           )}
         </section>
       )}
+
+      </div>
 
       <p className="text-xs text-muted">
         Definitions: CC-CEDICT ({dict.meta.version.slice(0, 10)}), CC BY-SA 4.0. Level tags: HSK 3.0 syllabus (2025-11). Stroke data:

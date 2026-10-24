@@ -4,6 +4,7 @@ import { assetUrl } from '../../lib/assets';
 import { href } from '../../lib/router';
 import { useDictionary } from '../dictionary/useDictionary';
 import WritingQuiz, { type QuizMode } from './WritingQuiz';
+import { useWide } from '../../lib/useWide';
 
 const SESSION_SIZE = 10;
 
@@ -90,7 +91,7 @@ export default function CharactersView({ char }: { char?: string }) {
         </button>
       </section>
 
-      <ul className="grid grid-cols-6 gap-2 sm:grid-cols-10" aria-label="Writing characters">
+      <ul className="grid grid-cols-6 gap-2 sm:grid-cols-10 lg:gap-3" aria-label="Writing characters">
         {chars.map((c) => {
           const s = statusOf(progress.get(c));
           return (
@@ -152,15 +153,21 @@ function ModeTabs({ mode, setMode }: { mode: QuizMode; setMode: (m: QuizMode) =>
   );
 }
 
+function quizSize(wide: boolean) {
+  return wide ? 360 : Math.min(280, window.innerWidth - 80);
+}
+
 function CharacterPractice({ char, progress, onRecorded }: { char: string; progress?: WritingProgress; onRecorded: () => void }) {
   const [mode, setMode] = useState<QuizMode>('watch');
+  const wide = useWide();
   const status = statusOf(progress);
   return (
     <div className="space-y-4">
       <a href={href({ name: 'characters' })} className="text-sm text-rose hover:underline">
         ← All writing characters
       </a>
-      <section className="card space-y-4">
+      <section className="card grid items-start gap-6 md:grid-cols-[1fr_auto] md:p-6">
+        <div className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="han text-4xl">{char}</h1>
@@ -174,17 +181,21 @@ function CharacterPractice({ char, progress, onRecorded }: { char: string; progr
           </div>
         </div>
         <ModeTabs mode={mode} setMode={setMode} />
+        <a href={href({ name: 'entry', word: char })} className="hidden text-sm text-rose hover:underline md:block">
+          Dictionary entry and words with {char} →
+        </a>
+        </div>
         <WritingQuiz
           char={char}
           mode={mode}
-          size={Math.min(280, window.innerWidth - 80)}
+          size={quizSize(wide)}
           onFinish={async (mistakes) => {
             if (mode === 'watch') return;
             await recordWritingQuiz(char, mode, mistakes);
             onRecorded();
           }}
         />
-        <a href={href({ name: 'entry', word: char })} className="block text-sm text-rose hover:underline">
+        <a href={href({ name: 'entry', word: char })} className="block text-sm text-rose hover:underline md:hidden">
           Dictionary entry and words with {char} →
         </a>
       </section>
@@ -197,6 +208,7 @@ function Session({ queue, onExit }: { queue: string[]; onExit: () => void }) {
   const [mode, setMode] = useState<QuizMode>('memory');
   const [finished, setFinished] = useState(false);
   const [results, setResults] = useState<Record<string, number>>({});
+  const wide = useWide();
   const char = queue[index];
 
   if (index >= queue.length) {
@@ -240,15 +252,20 @@ function Session({ queue, onExit }: { queue: string[]; onExit: () => void }) {
           End session
         </button>
       </header>
-      <section className="card space-y-4">
+      <section className="card grid items-start gap-6 md:grid-cols-[1fr_auto] md:p-6">
+        <div className="space-y-4">
         <p className="text-sm text-muted">Write this character from memory. If you're stuck, switch to Watch or Trace, then try again from memory.</p>
         <Gloss char={char} />
         <ModeTabs mode={mode} setMode={(m) => { setMode(m); setFinished(false); }} />
+        <button type="button" className="btn-primary hidden w-full md:block" onClick={next} data-testid="session-next-wide">
+          {finished ? 'Next →' : 'Skip →'}
+        </button>
+        </div>
         <WritingQuiz
           key={char}
           char={char}
           mode={mode}
-          size={Math.min(280, window.innerWidth - 80)}
+          size={quizSize(wide)}
           onFinish={async (mistakes) => {
             if (mode === 'watch') return;
             await recordWritingQuiz(char, mode, mistakes);
@@ -258,7 +275,7 @@ function Session({ queue, onExit }: { queue: string[]; onExit: () => void }) {
             }
           }}
         />
-        <button type="button" className="btn-primary w-full" onClick={next} data-testid="session-next">
+        <button type="button" className="btn-primary w-full md:hidden" onClick={next} data-testid="session-next">
           {finished ? 'Next →' : 'Skip →'}
         </button>
       </section>
