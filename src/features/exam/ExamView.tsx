@@ -135,7 +135,7 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
         </section>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2">
         <section className="card space-y-4">
           <h2 className="font-display text-xl font-semibold">Practice sets</h2>
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Practice set">
@@ -187,7 +187,7 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
                   className="flex w-full items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3 text-left transition hover:border-rose/40 hover:bg-blush"
                   onClick={() => start(p, 'timed')}
                 >
-                  <span className="font-medium">{p.title}</span>
+                  <span className="whitespace-nowrap font-medium">{p.title}</span>
                   <span className="text-sm text-muted">
                     {p.questions.length} questions · {(p.minutes.reading ?? 0) + (p.minutes.writing ?? 0)} min →
                   </span>
