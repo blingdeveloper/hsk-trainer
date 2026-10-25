@@ -48,3 +48,49 @@ export function numberedToMarked(pinyin: string): string {
     .map(syllableToMarked)
     .join(' ');
 }
+
+const TONE_OF: Record<string, number> = {};
+for (const marks of Object.values(TONE_MARKS)) marks.slice(0, 4).forEach((m, i) => (TONE_OF[m] = i + 1));
+
+/** Tone number 1–4 of a marked syllable, or 5 for neutral. */
+export function toneOf(syllable: string): number {
+  for (const ch of syllable.toLowerCase()) if (TONE_OF[ch]) return TONE_OF[ch];
+  return 5;
+}
+
+function setTone(syllable: string, tone: number): string {
+  const plain = syllable.normalize('NFD').replace(/[̀-̄̌]/g, '').normalize('NFC');
+  return syllableToMarked(`${plain}${tone}`);
+}
+
+/**
+ * Pinyin for a word as textbooks write it: syllables joined ("diànnǎo"),
+ * an apostrophe before a/e/o ("Xī'ān"), erhua attached ("yíhuìr"), and the tone
+ * changes of 一 and 不 ("yíhuìr", "búcuò"). Names keep their spaces ("Lǐ Míng").
+ */
+export function wordPinyin(word: string, pinyin: string): string {
+  const chars = [...word];
+  const syllables = pinyin.split(' ');
+  if (syllables.length < 2) return pinyin;
+  if (syllables.length === chars.length) {
+    syllables.forEach((s, i) => {
+      const next = syllables[i + 1];
+      if (!next || /^r$/i.test(next)) return;
+      const nextTone = toneOf(next);
+      const prev = chars[i - 1];
+      // 一 keeps yī when counting or ordinal (第一, 十一) and at the end of a word.
+      if (chars[i] === '一' && s.toLowerCase() === 'yī' && !/[第十〇零]/.test(prev ?? '')) {
+        syllables[i] = setTone(s, nextTone === 4 ? 2 : 4);
+      }
+      if (chars[i] === '不' && s.toLowerCase() === 'bù' && nextTone === 4) syllables[i] = setTone(s, 2);
+    });
+  }
+  let out = syllables[0];
+  for (const s of syllables.slice(1)) {
+    if (/^[A-ZĀÁǍÀĒÉĚÈŌÓǑÒ]/.test(s)) out += ` ${s}`; // a new name starts
+    else if (/^r$/.test(s)) out += 'r';
+    else if (/^[aeoāáǎàēéěèōóǒò]/i.test(s)) out += `'${s}`;
+    else out += s;
+  }
+  return out;
+}

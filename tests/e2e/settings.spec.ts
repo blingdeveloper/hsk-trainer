@@ -27,7 +27,7 @@ test('export a backup, lose progress, restore it', async ({ page }, testInfo) =>
   await page.goto('./#/practice');
   await page.getByRole('button', { name: /^Guided/ }).click();
   const q = page.getByTestId('q-a-r2-1');
-  await q.getByRole('radio', { name: 'A', exact: true }).click();
+  await q.getByRole('radio', { name: /^A:/ }).click();
   await q.getByRole('button', { name: 'Check' }).click();
   await page.getByRole('button', { name: 'Save and leave' }).click();
 

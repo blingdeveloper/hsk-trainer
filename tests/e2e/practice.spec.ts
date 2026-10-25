@@ -7,7 +7,7 @@ async function startSet(page: Page, set: 'A' | 'B' | 'C', mode: 'Guided' | 'Time
   await page.getByRole('button', { name: new RegExp(`^${mode}`) }).click();
 }
 
-const pick = (page: Page, qid: string, key: string) => page.getByTestId(`q-${qid}`).getByRole('radio', { name: key, exact: true }).click();
+const pick = (page: Page, qid: string, key: string) => page.getByTestId(`q-${qid}`).getByRole('radio', { name: new RegExp(`^${key}:`) }).click();
 
 test('guided mode: check shows explanation and locks the answer', async ({ page }) => {
   await startSet(page, 'A', 'Guided');
@@ -17,7 +17,7 @@ test('guided mode: check shows explanation and locks the answer', async ({ page 
   await q.getByRole('button', { name: 'Check' }).click();
   await expect(q.getByTestId('feedback')).toContainText('Correct');
   await expect(q.getByRole('button', { name: 'Check' })).toHaveCount(0);
-  await expect(q.getByRole('radio', { name: 'A', exact: true })).toBeDisabled();
+  await expect(q.getByRole('radio', { name: /^A:/ })).toBeDisabled();
 
   const wrong = page.getByTestId('q-a-r2-2');
   await pick(page, 'a-r2-2', 'F');
@@ -69,8 +69,8 @@ test('answers survive leaving the page and a reload; Resume restores them', asyn
 
   await page.reload();
   await page.getByRole('button', { name: 'Resume' }).click();
-  await expect(page.getByTestId('q-b-r2-1').getByRole('radio', { name: 'F', exact: true })).toHaveAttribute('aria-checked', 'true');
-  await expect(page.getByTestId('q-b-r2-2').getByRole('radio', { name: 'C', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByTestId('q-b-r2-1').getByRole('radio', { name: /^F:/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByTestId('q-b-r2-2').getByRole('radio', { name: /^C:/ })).toHaveAttribute('aria-checked', 'true');
 });
 
 test('timed exam timer pauses while away and continues after resume', async ({ page }) => {

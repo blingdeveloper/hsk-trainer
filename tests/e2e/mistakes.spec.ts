@@ -9,7 +9,7 @@ test('wrong answers land in the notebook; redoing them correctly fixes them', as
   await page.getByRole('button', { name: /^Guided/ }).click();
   for (const [qid, key] of [['a-r2-1', 'A'], ['a-r3-1', 'C']]) {
     const q = page.getByTestId(`q-${qid}`);
-    await q.getByRole('radio', { name: key, exact: true }).click();
+    await q.getByRole('radio', { name: new RegExp(`^${key}:`) }).click();
     await q.getByRole('button', { name: 'Check' }).click();
   }
   await page.getByRole('button', { name: 'Save and leave' }).click();
@@ -29,7 +29,7 @@ test('wrong answers land in the notebook; redoing them correctly fixes them', as
   await page.getByTestId('redo-mistakes').click();
   await expect(page.getByText('My mistakes · 0/2 answered')).toBeVisible();
   const q = page.getByTestId('q-a-r2-1');
-  await q.getByRole('radio', { name: 'C', exact: true }).click();
+  await q.getByRole('radio', { name: /^C:/ }).click();
   await q.getByRole('button', { name: 'Check' }).click();
   await page.getByTestId('submit-section').click();
   await page.getByTestId('confirm-submit').click();

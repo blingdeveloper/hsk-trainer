@@ -4,6 +4,7 @@ import { href, type Route } from '../../lib/router';
 import { ProgressBar } from '../../ui/Progress';
 import { summariseMistakes } from '../exam/mistakes';
 import { findPaper, MOCK_PAPERS, SET_PAPERS } from '../exam/papers';
+import { useOfflineState } from '../../lib/updates';
 
 const WRITING_TOTAL = 100;
 
@@ -194,18 +195,8 @@ export default function HomeView() {
 }
 
 function OfflineStatus() {
-  const [ready, setReady] = useState<boolean>();
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) return setReady(false);
-    let live = true;
-    navigator.serviceWorker.ready.then(() => live && setReady(true));
-    // Some embedded browsers never register the service worker; say so instead of waiting forever.
-    const t = setTimeout(() => navigator.serviceWorker.getRegistration().then((r) => live && !r && setReady(false)), 8000);
-    return () => {
-      live = false;
-      clearTimeout(t);
-    };
-  }, []);
+  const state = useOfflineState();
+  const ready = state === 'ready' ? true : state === 'unavailable' ? false : undefined;
   return (
     <div className="card flex items-center gap-4" data-testid="offline-status">
       <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-xl ${ready ? 'bg-sage text-good' : 'bg-blush text-muted'}`} aria-hidden>

@@ -40,6 +40,16 @@ export function href(route: Route): string {
   return `#/${route.name === 'home' ? '' : route.name}`;
 }
 
+// Hash of the previous in-app page, for "Back" links. Empty when the page was opened directly.
+let previousHash = '';
+window.addEventListener('hashchange', (e) => {
+  previousHash = new URL(e.oldURL).hash;
+});
+
+export function hasInAppHistory(): boolean {
+  return previousHash !== '';
+}
+
 export function useRoute(): Route {
   const [route, setRoute] = useState(() => parseRoute(location.hash));
   useEffect(() => {

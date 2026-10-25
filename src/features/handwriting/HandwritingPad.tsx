@@ -66,11 +66,16 @@ export default function HandwritingPad({ onPick, size = 280, clearOnPick = false
     redraw();
   }, [size, redraw]);
 
+  /** Increases with every change, so a slow result for older strokes can't overwrite a newer one. */
+  const requestRef = useRef(0);
+
   const update = useCallback(async () => {
     setStrokeCount(strokesRef.current.length);
     redraw();
+    const request = ++requestRef.current;
     try {
-      setCandidates(await recognise(strokesRef.current));
+      const result = await recognise(strokesRef.current);
+      if (request === requestRef.current) setCandidates(result);
     } catch {
       setStatus('error');
     }
@@ -110,6 +115,7 @@ export default function HandwritingPad({ onPick, size = 280, clearOnPick = false
   }
 
   function clear() {
+    requestRef.current++; // drop any result still on its way
     strokesRef.current = [];
     setCandidates([]);
     setStrokeCount(0);

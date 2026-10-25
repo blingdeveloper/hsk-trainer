@@ -36,9 +36,32 @@ export async function warmUpRecogniser(): Promise<void> {
   await send({});
 }
 
+let studyChars: Promise<Set<string>> | undefined;
+
+/** HSK 1–3 reading characters, used to bring common characters forward. */
+function loadStudyChars(): Promise<Set<string>> {
+  studyChars ??= fetch(assetUrl('packs/core/hsk.json'))
+    .then((r) => r.json())
+    .then((d: { readingChars: Record<string, string[]> }) => new Set(Object.values(d.readingChars).flat()))
+    .catch(() => new Set<string>());
+  return studyChars;
+}
+
+/** Places a candidate outside HSK 1–3 moves back, so rare radicals (匸, 丄) don't crowd out common characters. */
+export const RARE_PENALTY = 6;
+
+/** Re-ranks recogniser output: recognition order, with a penalty for characters outside the study lists. */
+export function rankCandidates(candidates: string[], common: Set<string>, limit: number): string[] {
+  return candidates
+    .map((c, i) => ({ c, score: i + (common.has(c) ? 0 : RARE_PENALTY) }))
+    .sort((a, b) => a.score - b.score)
+    .slice(0, limit)
+    .map((x) => x.c);
+}
+
 /** Returns likely characters for the drawn strokes, best match first. Runs on-device. */
-export async function recognise(strokes: Stroke[], limit = 8): Promise<string[]> {
+export async function recognise(strokes: Stroke[], limit = 10): Promise<string[]> {
   if (strokes.length === 0) return [];
-  const reply = await send({ strokes, limit });
-  return reply.candidates ?? [];
+  const [reply, common] = await Promise.all([send({ strokes, limit: 16 }), loadStudyChars()]);
+  return rankCandidates(reply.candidates ?? [], common, limit);
 }

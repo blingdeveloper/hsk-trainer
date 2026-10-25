@@ -7,8 +7,8 @@ async function answer(page: Page, q: Question, value: string, number: number) {
   if (q.taskType === 'writing-2-character') {
     await page.getByLabel(`Answer for question ${number}`).fill(value);
   } else {
-    // Passage options show their text too ("B水果"), so match on the leading letter.
-    await page.getByTestId(`q-${q.id}`).getByRole('radio', { name: new RegExp(`^${value}(?![A-Za-z])`) }).click();
+    // Answer buttons are named "B: 水果".
+    await page.getByTestId(`q-${q.id}`).getByRole('radio', { name: new RegExp(`^${value}:`) }).click();
   }
 }
 

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { href } from '../../lib/router';
+import { hasInAppHistory, href } from '../../lib/router';
 import { db } from '../../db/db';
 import StrokeOrder from '../strokes/StrokeOrder';
 import { useDictionary } from './useDictionary';
 import type { Dictionary } from './dictionary';
+import { definitionText, formatDefinition, type Segment } from './format';
+import { wordPinyin } from '../../lib/pinyin';
 
 function HskTag({ level }: { level?: number }) {
   if (!level) return null;
@@ -38,9 +40,15 @@ function Entry({ dict, word, typedTraditional }: { dict: Dictionary; word: strin
 
   return (
     <div className="space-y-4">
-      <a href={href({ name: 'write' })} className="btn-ghost -ml-3">
-        ← Draw another character
-      </a>
+      {hasInAppHistory() ? (
+        <button type="button" onClick={() => history.back()} className="btn-ghost -ml-3">
+          ← Back
+        </button>
+      ) : (
+        <a href={href({ name: 'write' })} className="btn-ghost -ml-3">
+          ← Look up a character
+        </a>
+      )}
 
       {typedTraditional && (
         <p className="rounded-2xl bg-blush px-4 py-3 text-sm" data-testid="traditional-note">
@@ -86,13 +94,9 @@ function Entry({ dict, word, typedTraditional }: { dict: Dictionary; word: strin
             {entries.map((e, i) => (
               <li key={i} className="border-t border-line pt-3 first:border-0 first:pt-0">
                 <p className="text-xl font-medium text-rose" data-testid="entry-pinyin">
-                  {e.pinyin}
+                  {wordPinyin(word, e.pinyin)}
                 </p>
-                <ul className="mt-1 list-disc pl-5 text-ink">
-                  {e.definitions.map((d, j) => (
-                    <li key={j}>{d}</li>
-                  ))}
-                </ul>
+                <Definitions definitions={e.definitions} />
               </li>
             ))}
           </ol>
@@ -138,9 +142,9 @@ function Entry({ dict, word, typedTraditional }: { dict: Dictionary; word: strin
                 return (
                   <li key={w}>
                     <a href={href({ name: 'entry', word: w })} className="block rounded-2xl border border-line px-4 py-3 transition hover:-translate-y-0.5 hover:border-rose/40 hover:bg-blush">
-                      <span className="han text-xl" lang="zh-CN">{w}</span> <span className="text-rose">{first.pinyin}</span>{' '}
+                      <span className="han text-xl" lang="zh-CN">{w}</span> <span className="text-rose">{wordPinyin(w, first.pinyin)}</span>{' '}
                       <HskTag level={dict.level(w)} />
-                      <span className="block truncate text-sm text-muted">{first.definitions.slice(0, 2).join('; ')}</span>
+                      <span className="block truncate text-sm text-muted">{first.definitions.filter((d) => !d.startsWith('CL:')).slice(0, 2).map(definitionText).join('; ')}</span>
                     </a>
                   </li>
                 );
@@ -157,5 +161,45 @@ function Entry({ dict, word, typedTraditional }: { dict: Dictionary; word: strin
         Make Me a Hanzi / hanzi-writer-data (Arphic Public License).
       </p>
     </div>
+  );
+}
+
+function SegmentView({ s }: { s: Segment }) {
+  if ('text' in s) return <>{s.text}</>;
+  return (
+    <a href={href({ name: 'entry', word: s.word })} className="whitespace-nowrap text-rose underline-offset-2 hover:underline">
+      <span className="han" lang="zh-CN">
+        {s.word}
+      </span>{' '}
+      <span className="text-sm">{s.pinyin}</span>
+    </a>
+  );
+}
+
+/** Meanings as a list, with measure words pulled out onto their own line. */
+function Definitions({ definitions }: { definitions: string[] }) {
+  const formatted = definitions.map(formatDefinition);
+  const meanings = formatted.filter((f) => f.kind === 'meaning');
+  const measures = formatted.filter((f) => f.kind === 'measure');
+  return (
+    <>
+      <ul className="mt-1 list-disc pl-5 text-ink">
+        {meanings.map((f, j) => (
+          <li key={j}>
+            {f.segments.map((s, k) => (
+              <SegmentView key={k} s={s} />
+            ))}
+          </li>
+        ))}
+      </ul>
+      {measures.length > 0 && (
+        <p className="mt-2 text-sm text-muted" data-testid="measure-words">
+          Measure word:{' '}
+          {measures.flatMap((f) => f.segments).map((s, k) => (
+            <SegmentView key={k} s={s} />
+          ))}
+        </p>
+      )}
+    </>
   );
 }

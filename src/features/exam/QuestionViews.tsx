@@ -223,6 +223,7 @@ function QuestionItem({
                     type="button"
                     role="radio"
                     aria-checked={chosen}
+                    aria-label={`${o.key}: ${o.text}`}
                     disabled={isLocked}
                     onClick={() => onAnswer?.(q.id, o.key)}
                     className={`choice han min-w-12 ${state} disabled:cursor-default`}

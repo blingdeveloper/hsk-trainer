@@ -13,3 +13,21 @@ export function useWide(): boolean {
   }, []);
   return wide;
 }
+
+/** Window width, updated on resize and rotation (throttled to animation frames). */
+export function useWindowWidth(): number {
+  const [width, setWidth] = useState(() => window.innerWidth);
+  useEffect(() => {
+    let frame = 0;
+    const onResize = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => setWidth(window.innerWidth));
+    };
+    window.addEventListener('resize', onResize);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+  return width;
+}

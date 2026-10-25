@@ -1,10 +1,11 @@
 import PageHeader from '../../ui/PageHeader';
 import { href } from '../../lib/router';
-import { useWide } from '../../lib/useWide';
+import { useWide, useWindowWidth } from '../../lib/useWide';
 import HandwritingPad from './HandwritingPad';
 
 export default function WriteView() {
   const wide = useWide();
+  const width = useWindowWidth();
   return (
     <div className="space-y-4">
       <PageHeader han="手写 · shǒuxiě" title="Handwriting lookup">
@@ -12,7 +13,7 @@ export default function WriteView() {
       </PageHeader>
       <div className="grid items-start gap-4 md:grid-cols-[auto_1fr]">
         <section className="card flex justify-center md:p-8">
-          <HandwritingPad size={wide ? 380 : Math.min(300, window.innerWidth - 72)} onPick={(c) => (location.hash = href({ name: 'entry', word: c }))} />
+          <HandwritingPad size={wide ? 380 : Math.min(300, width - 72)} onPick={(c) => (location.hash = href({ name: 'entry', word: c }))} />
         </section>
         <section className="card hidden space-y-2 text-sm text-muted md:block">
           <h2 className="font-display text-lg font-semibold text-ink">Tips for better results</h2>

@@ -22,6 +22,17 @@ test('draw a character → choose candidate → dictionary entry', async ({ page
   await expect(page.getByTestId('entry-headword')).toHaveText(word);
 });
 
+test('common characters come before rare radicals', async ({ page }) => {
+  await page.goto('./#/write');
+  await drawStrokes(page, SHI);
+  const candidates = page.getByTestId('candidate');
+  await expect(candidates.first()).toHaveText('十');
+  const all = await candidates.allTextContents();
+  // 下 and 七 are HSK 1 characters; the rare radicals 乛 and 丩 must come after them.
+  expect(all.indexOf('下')).toBeLessThan(all.indexOf('乛') === -1 ? 99 : all.indexOf('乛'));
+  expect(all.indexOf('七')).toBeLessThan(all.indexOf('丩') === -1 ? 99 : all.indexOf('丩'));
+});
+
 test('clear and undo work', async ({ page }) => {
   await page.goto('./#/write');
   await drawStrokes(page, SHI);

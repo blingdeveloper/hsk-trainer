@@ -5,7 +5,7 @@ import { assetUrl } from '../../lib/assets';
 import { href } from '../../lib/router';
 import { useDictionary } from '../dictionary/useDictionary';
 import WritingQuiz, { type QuizMode } from './WritingQuiz';
-import { useWide } from '../../lib/useWide';
+import { useWide, useWindowWidth } from '../../lib/useWide';
 import { ProgressBar, Ring } from '../../ui/Progress';
 
 const SESSION_SIZE = 10;
@@ -160,13 +160,14 @@ function ModeTabs({ mode, setMode }: { mode: QuizMode; setMode: (m: QuizMode) =>
   );
 }
 
-function quizSize(wide: boolean) {
-  return wide ? 360 : Math.min(280, window.innerWidth - 80);
+function quizSize(wide: boolean, width: number) {
+  return wide ? 360 : Math.min(280, width - 80);
 }
 
 function CharacterPractice({ char, progress, onRecorded }: { char: string; progress?: WritingProgress; onRecorded: () => void }) {
   const [mode, setMode] = useState<QuizMode>('watch');
   const wide = useWide();
+  const width = useWindowWidth();
   const status = statusOf(progress);
   return (
     <div className="space-y-4">
@@ -195,7 +196,7 @@ function CharacterPractice({ char, progress, onRecorded }: { char: string; progr
         <WritingQuiz
           char={char}
           mode={mode}
-          size={quizSize(wide)}
+          size={quizSize(wide, width)}
           onFinish={async (mistakes) => {
             if (mode === 'watch') return;
             await recordWritingQuiz(char, mode, mistakes);
@@ -216,6 +217,7 @@ function Session({ queue, onExit }: { queue: string[]; onExit: () => void }) {
   const [finished, setFinished] = useState(false);
   const [results, setResults] = useState<Record<string, number>>({});
   const wide = useWide();
+  const width = useWindowWidth();
   const char = queue[index];
 
   if (index >= queue.length) {
@@ -280,7 +282,7 @@ function Session({ queue, onExit }: { queue: string[]; onExit: () => void }) {
           key={char}
           char={char}
           mode={mode}
-          size={quizSize(wide)}
+          size={quizSize(wide, width)}
           onFinish={async (mistakes) => {
             if (mode === 'watch') return;
             await recordWritingQuiz(char, mode, mistakes);
