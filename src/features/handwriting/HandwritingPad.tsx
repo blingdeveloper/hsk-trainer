@@ -123,7 +123,9 @@ export default function HandwritingPad({ onPick, size = 280, clearOnPick = false
   }
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    // Fixed width: suggestions wrap under the pad instead of widening it, so the pad
+    // never moves while someone is writing.
+    <div className="flex flex-col items-center gap-3" style={{ width: size, maxWidth: '100%' }}>
       <canvas
         ref={canvasRef}
         data-testid="handwriting-canvas"

@@ -5,7 +5,7 @@ import { useSettings } from '../../lib/useSettings';
 import PageHeader from '../../ui/PageHeader';
 import Switch from '../../ui/Switch';
 import LevelSwitch from '../../ui/LevelSwitch';
-import { loadSettings } from '../../lib/useSettings';
+import { clearPendingSettings, loadSettings } from '../../lib/useSettings';
 import { level } from '../../content/levels';
 import { daysUntil } from '../home/HomeView';
 
@@ -122,6 +122,7 @@ function BackupSection() {
 
   async function restore(backup: Backup) {
     try {
+      clearPendingSettings();
       await restoreBackup(backup);
       await loadSettings();
       setState({ kind: 'done', message: 'Progress restored from the backup.' });

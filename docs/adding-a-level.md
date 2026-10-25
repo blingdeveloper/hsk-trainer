@@ -1,4 +1,6 @@
-# Playbook: adding a level (next: HSK 1)
+# Playbook: adding a level
+
+**Status:** HSK 1 added on 2026-10-25 by following this playbook (commits 12e05a5, bb10dae and the QA commit after them). Use it again for HSK 3.
 
 Goal: add **HSK 1** to the same app, with everything HSK 2 has (practice sets, mock exams, mistake notebook, Today screen, handwriting dictionary, Settings, backup), built the same way and to the same quality bar. You pick the level in Settings, and each level's progress is kept apart.
 
@@ -58,3 +60,12 @@ Goal: add **HSK 1** to the same app, with everything HSK 2 has (practice sets, m
 - Exam state saves every second in timed mode; IndexedDB writes during page unload aren't reliable.
 - Prove every new checker catches a deliberate mistake before trusting a pass.
 - Ask before: choosing a listening approach, publishing/deploying (CTI's syllabus data has no open licence), anything outward-facing.
+
+## 5. What adding HSK 1 taught us
+
+- **Level config is the single source** (`src/content/levels.ts`): official format, mock layout, paper-id prefix (`h1-`), allowed character levels. New levels mostly mean a new config entry plus content.
+- **The syllabus's character lists and word lists disagree**: 商店 and 饭店 are HSK 1 words, but 店 is an HSK 2 character (饺 is HSK 3). Rule: a level may use its reading characters **plus** the characters of its syllabus words.
+- **PDF watermark bug**: 汉考国际 watermark characters stuck to some list lines ("际169.四"), so the parser dropped them (四 was missing from HSK 1). The parser now tolerates them and reports numbering gaps.
+- **Settings must survive an instant reload**: changes go to localStorage synchronously until the IndexedDB write completes, and are replayed on start.
+- **Layout must not move under the pen**: the handwriting pad's container has a fixed width, and `scrollbar-gutter: stable` is set. Otherwise suggestions appearing could move the pad between strokes.
+- **For a level without writing**, "Up next" puts the practice paper before writing practice.

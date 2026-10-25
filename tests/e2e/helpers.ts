@@ -3,8 +3,9 @@ import { expect, type Page } from '@playwright/test';
 /** Draws strokes given in 0–1 coordinates on the handwriting canvas. */
 export async function drawStrokes(page: Page, strokes: [number, number][][]) {
   const canvas = page.getByTestId('handwriting-canvas');
-  const box = (await canvas.boundingBox())!;
   for (const stroke of strokes) {
+    // Measure before every stroke, like a person looking at the pad.
+    const box = (await canvas.boundingBox())!;
     const [x0, y0] = stroke[0];
     await page.mouse.move(box.x + x0 * box.width, box.y + y0 * box.height);
     await page.mouse.down();

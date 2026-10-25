@@ -39,6 +39,12 @@
   }
 }
 
+html {
+  /* Always reserve the scrollbar's space, so the layout (and the drawing pad under
+     the pen) doesn't shift sideways when a page becomes long enough to scroll. */
+  scrollbar-gutter: stable;
+}
+
 html,
 body {
   background: var(--color-paper);

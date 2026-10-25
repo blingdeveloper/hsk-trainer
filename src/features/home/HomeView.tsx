@@ -98,6 +98,12 @@ function upNext(o: Overview, levelName: string, hasWriting: boolean): Step[] {
       testId: 'next-paper',
     });
   }
+  // Without a writing section in the exam, the next paper matters more than writing practice.
+  if (!hasWriting) {
+    const writing = steps.findIndex((s) => s.testId === 'next-characters');
+    const paper = steps.findIndex((s) => s.testId === 'next-paper');
+    if (writing >= 0 && paper > writing) steps.splice(writing, 0, ...steps.splice(paper, 1));
+  }
   return steps.slice(0, 3);
 }
 

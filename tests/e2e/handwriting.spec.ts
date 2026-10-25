@@ -26,7 +26,7 @@ test('common characters come before rare radicals', async ({ page }) => {
   await page.goto('./#/write');
   await drawStrokes(page, SHI);
   const candidates = page.getByTestId('candidate');
-  await expect(candidates.first()).toHaveText('十');
+  await expect(candidates.first(), `suggestions: ${(await candidates.allTextContents()).join('')}`).toHaveText('十');
   const all = await candidates.allTextContents();
   // 下 and 七 are HSK 1 characters; the rare radicals 乛 and 丩 must come after them.
   expect(all.indexOf('下')).toBeLessThan(all.indexOf('乛') === -1 ? 99 : all.indexOf('乛'));
@@ -56,4 +56,15 @@ test('handwriting → dictionary → stroke order works with the network OFF', a
   await expect(page.getByTestId('stroke-order').locator('svg')).toBeVisible();
   await page.getByRole('button', { name: /Play stroke order/ }).click();
   await expect(page.getByText('No stroke-order data')).toHaveCount(0);
+});
+
+test('the pad does not move when suggestions appear', async ({ page }) => {
+  await page.goto('./#/write');
+  // The heading font loading on first visit moves things once, before anyone writes.
+  await page.evaluate(() => document.fonts.ready);
+  const canvas = page.getByTestId('handwriting-canvas');
+  const before = await canvas.boundingBox();
+  await drawStrokes(page, [SHI[0]]);
+  await expect(page.getByTestId('candidate').first()).toBeVisible();
+  expect(await canvas.boundingBox()).toEqual(before);
 });

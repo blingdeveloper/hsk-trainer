@@ -55,3 +55,46 @@ describe('mistake papers', () => {
     expect(findPaper('mock-2')?.title).toBe('Mock exam 2');
   });
 });
+
+describe('HSK 1 papers', () => {
+  it('practice sets: Reading Parts 2–4 in official order, 15 questions, 15 min, no writing', async () => {
+    const { setPapers } = await import('../../src/features/exam/papers');
+    for (const p of setPapers(1)) {
+      expect(p.id).toMatch(/^h1-set-[abc]$/);
+      expect(p.level).toBe(1);
+      expect(p.sections).toEqual(['reading']);
+      expect(p.groups.map((g) => g.officialPart)).toEqual(['Reading Part 2', 'Reading Part 3', 'Reading Part 4']);
+      expect(p.questions).toHaveLength(15);
+      // Official HSK 1 pace: 20 min for 20 reading questions.
+      expect(p.minutes).toEqual({ reading: 15 });
+    }
+  });
+
+  it('mock exams follow the HSK 1 paper and are all different', async () => {
+    const { mockPapers } = await import('../../src/features/exam/papers');
+    const mocks = mockPapers(1);
+    expect(mocks.map((m) => m.id)).toEqual(['h1-mock-1', 'h1-mock-2', 'h1-mock-3']);
+    for (const m of mocks) {
+      expect(m.groups.map((g) => g.taskType)).toEqual(['reading-3-response-match', 'reading-2-word-bank', 'reading-4-short-passage']);
+      expect(m.questions).toHaveLength(15);
+      expect(m.minutes).toEqual({ reading: 15 });
+      expect(new Set(m.questions.map((q) => q.level))).toEqual(new Set([1]));
+    }
+    expect(new Set(mocks.map((m) => m.groups.map((g) => g.id).join())).size).toBe(3);
+  });
+
+  it('HSK 2 paper ids are unchanged, so saved progress stays valid', async () => {
+    const { setPapers, mockPapers, findPaper } = await import('../../src/features/exam/papers');
+    expect(setPapers(2).map((p) => p.id)).toEqual(['set-a', 'set-b', 'set-c']);
+    expect(mockPapers(2).map((p) => p.id)).toEqual(['mock-1', 'mock-2', 'mock-3']);
+    expect(findPaper('h1-mock-2')?.level).toBe(1);
+    expect(findPaper('mock-2')?.level).toBe(2);
+  });
+
+  it('a mistakes paper takes its level from its questions', async () => {
+    const { paperFromMistakes } = await import('../../src/features/exam/papers');
+    const p = paperFromMistakes(['h1-b-p3-2', 'h1-a-p2-1']);
+    expect(p.level).toBe(1);
+    expect(p.questions.map((q) => q.id)).toEqual(['h1-a-p2-1', 'h1-b-p3-2']);
+  });
+});

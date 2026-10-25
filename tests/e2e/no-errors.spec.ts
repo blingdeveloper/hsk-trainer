@@ -28,6 +28,19 @@ test('every screen loads without console errors or uncaught exceptions', async (
     await expect(page.locator('main')).not.toBeEmpty();
     await page.waitForTimeout(400);
   }
+  // The same screens with HSK 1 selected.
+  await page.goto('./#/settings');
+  await page.getByTestId('level-1').click();
+  for (const route of ['#/', '#/practice', '#/mistakes', '#/characters', '#/settings']) {
+    await page.goto(`./${route}`);
+    await expect(page.locator('main')).not.toBeEmpty();
+    await page.waitForTimeout(300);
+  }
+  await page.goto('./#/practice');
+  await page.getByRole('button', { name: /^Mock exam 1/ }).click();
+  await expect(page.getByRole('timer')).toBeVisible();
+  await page.getByRole('button', { name: 'Save and leave' }).click();
+
   // Interactive bits that load data on demand.
   await page.goto('./#/characters/%E5%AD%B8');
   await page.getByRole('tab', { name: 'Trace' }).click();
