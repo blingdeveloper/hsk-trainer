@@ -4,6 +4,9 @@ import { href } from '../../lib/router';
 import { useSettings } from '../../lib/useSettings';
 import PageHeader from '../../ui/PageHeader';
 import Switch from '../../ui/Switch';
+import LevelSwitch from '../../ui/LevelSwitch';
+import { loadSettings } from '../../lib/useSettings';
+import { level } from '../../content/levels';
 import { daysUntil } from '../home/HomeView';
 
 export default function SettingsView() {
@@ -37,15 +40,21 @@ export default function SettingsView() {
         </div>
         <dl className="grid gap-2 text-sm sm:grid-cols-2">
           <div className="rounded-2xl bg-paper p-3">
-            <dt className="text-muted">Level</dt>
-            <dd className="font-medium">HSK 2</dd>
+            <dt className="text-muted">Official paper</dt>
+            <dd className="font-medium">{level(settings.targetLevel).formatSummary}</dd>
           </div>
           <div className="rounded-2xl bg-paper p-3">
             <dt className="text-muted">Syllabus</dt>
             <dd className="font-medium">HSK 3.0 (2025-11, in use from July 2026)</dd>
           </div>
         </dl>
-        <p className="text-xs text-muted">Only HSK 2 practice content exists so far, so the level can't be changed yet.</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-medium">Level</p>
+            <p className="text-sm text-muted">Practice, mock exams, mistakes and Today follow this level. Each level keeps its own progress.</p>
+          </div>
+          <LevelSwitch />
+        </div>
       </section>
 
       <section className="card space-y-3" aria-labelledby="study-settings">
@@ -55,7 +64,7 @@ export default function SettingsView() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="font-medium">Show pinyin in exam questions</p>
-            <p className="text-sm text-muted">The real HSK 2 paper prints pinyin. Turn it off to practise reading characters alone.</p>
+            <p className="text-sm text-muted">The real HSK 1 and HSK 2 papers print pinyin. Turn it off to practise reading characters alone.</p>
           </div>
           <Switch checked={settings.showPinyin} onChange={(v) => update({ showPinyin: v })} label="Pinyin" />
         </div>
@@ -114,6 +123,7 @@ function BackupSection() {
   async function restore(backup: Backup) {
     try {
       await restoreBackup(backup);
+      await loadSettings();
       setState({ kind: 'done', message: 'Progress restored from the backup.' });
     } catch {
       setState({ kind: 'error', message: 'Restoring failed. Nothing was changed.' });

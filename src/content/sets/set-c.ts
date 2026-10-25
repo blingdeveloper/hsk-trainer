@@ -138,4 +138,4 @@ const questions = [
   ]),
 ];
 
-export const SET_C: PracticeSet = { id: 'c', title: 'Practice set C', groups, questions };
+export const SET_C: PracticeSet = { id: 'c', level: 2, title: 'Practice set C', groups, questions };

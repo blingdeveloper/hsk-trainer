@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { href, useRoute, type Route } from './lib/router';
 import WriteView from './features/handwriting/WriteView';
 import EntryView from './features/dictionary/EntryView';
@@ -7,9 +7,9 @@ import LicencesView from './features/licences/LicencesView';
 import CharactersView from './features/characters/CharactersView';
 import MistakesView from './features/exam/MistakesView';
 import HomeView, { daysUntil } from './features/home/HomeView';
-import { getSettings } from './db/db';
 import SettingsView from './features/settings/SettingsView';
 import { useUpdateAvailable } from './lib/updates';
+import { useLevel, useSettings } from './lib/useSettings';
 
 const NAV: { route: Route; label: string; han: string; also?: Route['name'][] }[] = [
   { route: { name: 'home' }, label: 'Today', han: '今' },
@@ -19,15 +19,14 @@ const NAV: { route: Route; label: string; han: string; also?: Route['name'][] }[
   { route: { name: 'settings' }, label: 'Settings', han: '设', also: ['licences'] },
 ];
 
-function SidebarCountdown({ routeName }: { routeName: string }) {
-  const [date, setDate] = useState<string>();
-  useEffect(() => {
-    getSettings().then((s) => setDate(s.examDate));
-  }, [routeName]);
+function SidebarCountdown() {
+  const [settings] = useSettings();
+  const lvl = useLevel();
+  const date = settings.examDate;
   if (!date) return null;
   return (
     <div className="mx-3 mt-auto hidden rounded-2xl bg-blush p-4 md:block">
-      <p className="text-xs text-muted">HSK 2 exam in</p>
+      <p className="text-xs text-muted">{lvl.name} exam in</p>
       <p className="font-display text-2xl font-semibold">{Math.max(0, daysUntil(date))} days</p>
     </div>
   );
@@ -95,7 +94,7 @@ export default function App() {
             );
           })}
         </ul>
-        <SidebarCountdown routeName={route.name} />
+        <SidebarCountdown />
       </nav>
       <main className="min-w-0 flex-1 px-4 pb-28 pt-6 md:px-10 md:pb-14 md:pt-10 lg:px-14">
         <div className="mx-auto max-w-5xl">

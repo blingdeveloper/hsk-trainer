@@ -6,6 +6,7 @@ import { href } from '../../lib/router';
 import { useDictionary } from '../dictionary/useDictionary';
 import WritingQuiz, { type QuizMode } from './WritingQuiz';
 import { useWide, useWindowWidth } from '../../lib/useWide';
+import { useLevel } from '../../lib/useSettings';
 import { ProgressBar, Ring } from '../../ui/Progress';
 
 const SESSION_SIZE = 10;
@@ -42,6 +43,7 @@ export function pickSession(chars: string[], progress: Map<string, WritingProgre
 }
 
 export default function CharactersView({ char }: { char?: string }) {
+  const lvl = useLevel();
   const [chars, setChars] = useState<string[]>([]);
   const [progress, setProgress] = useState(new Map<string, WritingProgress>());
   const [session, setSession] = useState<string[] | null>(null);
@@ -73,6 +75,12 @@ export default function CharactersView({ char }: { char?: string }) {
           The {chars.length || 100} characters the official HSK 1–2 syllabus says you must be able to write (书写字). A character counts as
           learned after you write it from memory {RECALLS_TO_LEARN} times with at most one mistake.
         </p>
+        {!lvl.official.writing && (
+          <p className="mt-2 text-sm" data-testid="hsk1-writing-note">
+            The {lvl.name} exam has no writing section. This list is shared with HSK 2 (the syllabus doesn't split it), and writing characters
+            still helps you recognise them when reading.
+          </p>
+        )}
       </PageHeader>
 
       <section className="card flex flex-wrap items-center gap-5">

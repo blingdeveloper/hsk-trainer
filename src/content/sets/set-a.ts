@@ -267,4 +267,4 @@ const questions: Question[] = [
   },
 ];
 
-export const SET_A: PracticeSet = { id: 'a', title: 'Practice set A', groups, questions };
+export const SET_A: PracticeSet = { id: 'a', level: 2, title: 'Practice set A', groups, questions };

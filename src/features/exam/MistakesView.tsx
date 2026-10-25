@@ -6,6 +6,8 @@ import { href } from '../../lib/router';
 import { newExam } from './ExamRunner';
 import { CATEGORY, summariseMistakes, type MistakeSummary } from './mistakes';
 import { groupById, paperFromMistakes, questionById } from './papers';
+import { useLevel } from '../../lib/useSettings';
+import LevelSwitch from '../../ui/LevelSwitch';
 import { Feedback } from './QuestionViews';
 
 /** Mistake notebook: every question whose latest answer was wrong, grouped by error category. */
@@ -13,13 +15,16 @@ export default function MistakesView() {
   const [mistakes, setMistakes] = useState<MistakeSummary[] | null>(null);
   const [filter, setFilter] = useState<TaskType | 'all'>('all');
   const [showFixed, setShowFixed] = useState(false);
+  const lvl = useLevel();
 
   useEffect(() => {
     db.attempts.toArray().then((a) => setMistakes(summariseMistakes(a)));
   }, []);
 
-  const open = useMemo(() => (mistakes ?? []).filter((m) => m.open && questionById(m.questionId)), [mistakes]);
-  const fixed = useMemo(() => (mistakes ?? []).filter((m) => !m.open && questionById(m.questionId)), [mistakes]);
+  // Only this level's questions; each level keeps its own notebook.
+  const mine = useMemo(() => (mistakes ?? []).filter((m) => questionById(m.questionId)?.level === lvl.id), [mistakes, lvl.id]);
+  const open = useMemo(() => mine.filter((m) => m.open), [mine]);
+  const fixed = useMemo(() => mine.filter((m) => !m.open), [mine]);
   const counts = useMemo(() => {
     const c = new Map<TaskType, number>();
     for (const m of open) {
@@ -40,7 +45,7 @@ export default function MistakesView() {
 
   return (
     <div className="space-y-4">
-      <PageHeader han="改错 · gǎicuò" title="My mistakes">
+      <PageHeader han="改错 · gǎicuò" title={`My mistakes · ${lvl.name}`} actions={<LevelSwitch />}>
         <p className="text-sm text-muted">
           Questions whose latest answer was wrong. Answer one correctly when you redo it and it moves to "Fixed".
         </p>

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { ORIGINAL_LABEL } from '../../content/types';
+import { originalLabel } from '../../content/types';
+import { useLevel } from '../../lib/useSettings';
+import LevelSwitch from '../../ui/LevelSwitch';
 import { db, type ExamInProgress } from '../../db/db';
 import { href } from '../../lib/router';
 import PageHeader from '../../ui/PageHeader';
 import ExamRunner, { newExam } from './ExamRunner';
 import { summariseMistakes } from './mistakes';
-import { findPaper, MOCK_PAPERS, paperTitle, SET_PAPERS, type Paper } from './papers';
+import { attemptLevel, describeSections, findPaper, mockPapers, paperTitle, setPapers, type Paper } from './papers';
 
 interface PastSession {
   sessionId: string;
@@ -16,10 +18,11 @@ interface PastSession {
   timestamp: number;
 }
 
-async function loadHistory(): Promise<PastSession[]> {
+async function loadHistory(levelId: number): Promise<PastSession[]> {
   const attempts = await db.attempts.orderBy('timestamp').reverse().toArray();
   const sessions = new Map<string, PastSession>();
   for (const a of attempts) {
+    if (attemptLevel(a.questionId) !== levelId) continue;
     const s = sessions.get(a.sessionId) ?? {
       sessionId: a.sessionId,
       title: paperTitle(a.paperId, a.questionId),
@@ -45,6 +48,9 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
   const [setIndex, setSetIndex] = useState(0);
   const [history, setHistory] = useState<PastSession[]>([]);
   const [openMistakes, setOpenMistakes] = useState(0);
+  const lvl = useLevel();
+  const sets = setPapers(lvl.id);
+  const mocks = mockPapers(lvl.id);
 
   useEffect(() => {
     if (active) return;
@@ -60,13 +66,17 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
       }
       setSaved(current && paper ? current : null);
       setLoaded(true);
-      setHistory(await loadHistory());
-      setOpenMistakes(summariseMistakes(await db.attempts.toArray()).filter((m) => m.open).length);
+      setHistory(await loadHistory(lvl.id));
+      const levelAttempts = (await db.attempts.toArray()).filter((a) => attemptLevel(a.questionId) === lvl.id);
+      setOpenMistakes(summariseMistakes(levelAttempts).filter((m) => m.open).length);
     })();
     return () => {
       live = false;
     };
-  }, [active, autoResume]);
+  }, [active, autoResume, lvl.id]);
+
+  // Switching level starts again from that level's first set.
+  useEffect(() => setSetIndex(0), [lvl.id]);
 
   async function start(paper: Paper, mode: ExamInProgress['mode'], confirmed = false) {
     if (saved && !confirmed) {
@@ -89,14 +99,18 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
   }
   if (!loaded) return <p className="text-muted">Loading…</p>;
 
-  const set = SET_PAPERS[setIndex];
+  const set = sets[Math.min(setIndex, sets.length - 1)];
   const savedPaper = saved && findPaper(saved.paperId, saved.questionIds);
+  const savedTitle = savedPaper ? (savedPaper.level === lvl.id ? savedPaper.title : `${savedPaper.title} (HSK ${savedPaper.level})`) : '';
 
   return (
     <div className="space-y-6">
-      <PageHeader han="练习 · liànxí" title="Exam practice">
+      <PageHeader han="练习 · liànxí" title={`${lvl.name} exam practice`} actions={<LevelSwitch />}>
         <p className="text-sm">
-          <span className="tag">Original practice</span> {ORIGINAL_LABEL}
+          <span className="tag">Original practice</span> {originalLabel(lvl.id)}
+        </p>
+        <p className="mt-1 text-sm">
+          <strong className="text-ink">Official {lvl.name} paper:</strong> {lvl.formatSummary}
         </p>
       </PageHeader>
 
@@ -106,7 +120,7 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
             继续
           </span>
           <div className="flex-1">
-            <p className="font-medium">Unfinished: {savedPaper.title}</p>
+            <p className="font-medium">Unfinished: {savedTitle}</p>
             <p className="text-sm text-muted">
               {saved.mode === 'timed' ? 'Timed' : 'Guided'} · {Object.keys(saved.answers).length}/{savedPaper.questions.length} answered · saved{' '}
               {new Date(saved.updatedAt).toLocaleString()}
@@ -124,7 +138,7 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
       {pending && (
         <section className="card flex flex-wrap items-center gap-3" role="alertdialog" aria-label="Replace unfinished exam">
           <p className="flex-1 text-sm">
-            Starting <strong>{pending.paper.title}</strong> will discard your unfinished {savedPaper?.title}.
+            Starting <strong>{pending.paper.title}</strong> will discard your unfinished {savedTitle}.
           </p>
           <button type="button" className="btn-secondary" onClick={() => setPending(null)}>
             Cancel
@@ -135,11 +149,17 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
         </section>
       )}
 
+      {!set ? (
+        <section className="card" data-testid="no-sets">
+          <p className="font-medium">{lvl.name} practice sets are on their way.</p>
+          <p className="text-sm text-muted">Switch to another level above to practise in the meantime.</p>
+        </section>
+      ) : (
       <div className="grid gap-6 xl:grid-cols-2">
         <section className="card space-y-4">
           <h2 className="font-display text-xl font-semibold">Practice sets</h2>
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Practice set">
-            {SET_PAPERS.map((p, i) => (
+            {sets.map((p, i) => (
               <button
                 key={p.id}
                 type="button"
@@ -152,9 +172,11 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
               </button>
             ))}
           </div>
-          <p className="text-sm text-muted">
-            Reading Parts 2–4 (15 questions) and Writing Parts 1–2 (10). Timed mode scales the official time per question: reading{' '}
-            {set.minutes.reading} min, writing {set.minutes.writing} min.
+          <p className="text-sm text-muted" data-testid="set-summary">
+            {describeSections(set)
+              .map((d) => d.text)
+              .join('; ')}
+            . Timed mode uses the official time per question.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             <button type="button" className="rounded-2xl border border-line p-4 text-left transition hover:-translate-y-0.5 hover:border-rose/40 hover:bg-blush" onClick={() => start(set, 'guided')}>
@@ -168,19 +190,21 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
           </div>
         </section>
 
+        {mocks.length > 0 && (
         <section className="card space-y-4">
           <h2 className="font-display text-xl font-semibold">Full mock exam</h2>
-          <p className="text-sm text-muted">
-            Same order, part sizes and pace as the official paper: Reading Part 2 (5), Part 3 (10), Part 4 (5) in{' '}
-            {MOCK_PAPERS[0].minutes.reading} min, then Writing Parts 1–2 (10) in {MOCK_PAPERS[0].minutes.writing} min. Always timed. You
-            can't go back to a finished section.
+          <p className="text-sm text-muted" data-testid="mock-summary">
+            Same order, part sizes and pace as the official paper:{' '}
+            {describeSections(mocks[0])
+              .map((d) => d.text)
+              .join(', then ')}
+            . Always timed. You can't go back to a finished section.
           </p>
           <p className="text-xs text-muted">
-            Not included yet: Listening (25 questions, ~17 min, then 3 min to fill in the answer sheet) and Reading Part 1 (5 picture
-            questions). Mocks reuse questions from sets A–C, so you may have seen some.
+            Not included yet: {lvl.notIncluded}. Mocks reuse questions from the practice sets, so you may have seen some.
           </p>
           <ul className="space-y-2">
-            {MOCK_PAPERS.map((p) => (
+            {mocks.map((p) => (
               <li key={p.id}>
                 <button
                   type="button"
@@ -196,7 +220,9 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
             ))}
           </ul>
         </section>
+        )}
       </div>
+      )}
 
       <a href={href({ name: 'mistakes' })} className="card-link flex items-center gap-4">
         <span className="han flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blush text-lg text-rose" lang="zh-CN" aria-hidden>

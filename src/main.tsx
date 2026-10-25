@@ -5,9 +5,15 @@ import '@fontsource-variable/inter';
 import '@fontsource-variable/fraunces';
 import './index.css';
 import './lib/updates';
+import { loadSettings } from './lib/useSettings';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+// Settings decide the level shown everywhere, so load them before the first render.
+void loadSettings()
+  .catch(() => {})
+  .finally(() =>
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    ),
+  );
