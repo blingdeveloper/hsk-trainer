@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { SETS } from '../../src/content/sets';
+import { LEVELS } from '../../src/content/levels';
+
+const SETS = [...LEVELS[1].sets, ...LEVELS[2].sets];
 import type { Question } from '../../src/content/types';
 
 // Checks every pinyin line in the practice content against CC-CEDICT readings,
@@ -80,7 +82,7 @@ function pairs(q: Question, options: { key: string; text: string; pinyin?: strin
   return out;
 }
 
-describe.each(SETS)('$title pinyin', (set) => {
+describe.each(SETS.map((s) => ({ ...s, name: `${LEVELS[s.level].name} ${s.title}` })))('$name pinyin', (set) => {
   it('matches the dictionary for every character', () => {
     const problems: string[] = [];
     const check = (where: string, text: string, py: string) => {

@@ -44,14 +44,21 @@ function parseVocab(text) {
 /** Pinyin compared without spaces, apostrophes, hyphens or case: "xué xiào" ~ "xuéxiào". */
 const normPinyin = (p) => p.toLowerCase().replace(/[\s'’·\-/]/g, '');
 
-/** Character lists: "1. 爱" / "169.四". */
+/**
+ * Character lists: "1. 爱" / "169.四". The PDF has a faint 汉考国际 watermark whose
+ * characters sometimes stick to the start of a line ("际169.四"), so allow them there.
+ */
 function parseCharList(text) {
   const chars = [];
   for (const line of text.split('\n')) {
-    const m = /^\d+\.\s*(\S)/u.exec(line.trim());
-    if (m) chars.push(m[1]);
+    const m = /^[汉考国际]*\s*(\d+)\.\s*(\S)/u.exec(line.trim());
+    if (m) chars.push({ n: Number(m[1]), c: m[2] });
   }
-  return chars;
+  // Keep list order and report gaps, so a dropped line can't go unnoticed again.
+  chars.sort((a, b) => a.n - b.n);
+  const gaps = chars.filter((x, i) => x.n !== i + 1);
+  if (gaps.length) console.warn(`character list has gaps near: ${gaps.slice(0, 5).map((g) => g.n).join(', ')}`);
+  return chars.map((x) => x.c);
 }
 
 /** Splits a page range into the lists that start with the given headings. */
