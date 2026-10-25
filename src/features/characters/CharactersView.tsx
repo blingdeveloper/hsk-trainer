@@ -125,8 +125,9 @@ export default function CharactersView({ char }: { char?: string }) {
 
 function Gloss({ char }: { char: string }) {
   const { dict } = useDictionary();
-  const entry = dict?.lookup(char)[0];
-  if (!entry) return <p className="text-muted">…</p>;
+  if (!dict) return <p className="text-muted">…</p>;
+  const entry = dict.lookup(char)[0];
+  if (!entry) return <p className="text-muted">Not in the offline dictionary.</p>;
   return (
     <p data-testid="char-gloss">
       <span className="text-lg font-medium text-rose">{entry.pinyin}</span>{' '}
@@ -222,7 +223,9 @@ function Session({ queue, onExit }: { queue: string[]; onExit: () => void }) {
     return (
       <div className="space-y-4">
         <p className="eyebrow">Session done</p>
-        <h1 className="font-display text-3xl font-semibold">Nice work.</h1>
+        <h1 className="font-display text-3xl font-semibold">
+          {good === queue.length ? 'Perfect session.' : good >= queue.length / 2 ? 'Nice work.' : good > 0 ? 'Good start. Keep going.' : 'These need more practice.'}
+        </h1>
         <section className="card" data-testid="session-summary">
           <p className="text-3xl font-semibold">
             {good} / {queue.length}

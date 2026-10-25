@@ -36,7 +36,7 @@ const SOURCES = [
   },
   {
     name: 'HSK 考试大纲 (Chinese Testing International, published 2025-11, effective 2026-07)',
-    use: 'HSK 3.0 level tags and the HSK 1–2 writing-character list',
+    use: 'HSK 3.0 level tags, the HSK 1–2 writing-character list, and which reading of a character to show first',
     url: 'https://www.chinesetest.cn/hsk',
     licence: 'Copyright CTI. No open licence.',
     licenceUrl: '',

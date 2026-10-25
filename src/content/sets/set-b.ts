@@ -74,16 +74,16 @@ const questions = [
       explanation: 'He is a doctor (医生), not a teacher, and 每天都很忙 (busy every day). Sometimes he can\'t even go home, so C is wrong.',
     },
     {
-      id: 'b-r4-2', prompt: '小王，你的中文说得真好！你学了多长时间了？',
-      pinyin: 'Xiǎo Wáng, nǐ de Zhōngwén shuō de zhēn hǎo! Nǐ xuéle duō cháng shíjiān le?',
+      id: 'b-r4-2', prompt: '小王，你的汉字写得真好看！你学了多长时间了？',
+      pinyin: 'Xiǎo Wáng, nǐ de Hànzì xiě de zhēn hǎokàn! Nǐ xuéle duō cháng shíjiān le?',
       question: '★ 小王：',
       options: [
-        { key: 'A', text: '会说中文', pinyin: 'huì shuō Zhōngwén' },
+        { key: 'A', text: '字写得好', pinyin: 'zì xiě de hǎo' },
         { key: 'B', text: '是老师', pinyin: 'shì lǎoshī' },
         { key: 'C', text: '不想学习', pinyin: 'bù xiǎng xuéxí' },
       ],
       correctAnswer: 'A',
-      explanation: 'The speaker praises Xiao Wang\'s Chinese (中文说得真好), so Xiao Wang can speak Chinese.',
+      explanation: 'The speaker praises Xiao Wang\'s handwriting (汉字写得真好看), so A is right. Nothing says Xiao Wang is a teacher, and he has been learning, so C is wrong.',
     },
     {
       id: 'b-r4-3', prompt: '昨天我去商店买了两件衣服，一件红色的，一件白色的。红色的比白色的贵。',

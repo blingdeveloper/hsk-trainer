@@ -5,7 +5,10 @@ import { cssVar, useColorScheme } from '../../lib/theme';
 
 /** Loads bundled stroke data for Hanzi Writer. Works offline once cached. */
 export function loadStrokeData(c: string): Promise<CharacterJson> {
-  return fetch(assetUrl(`packs/strokes/${c}.json`)).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`No stroke data for ${c}`))));
+  // Some servers answer a missing file with the app page instead of a 404, so check it is JSON.
+  return fetch(assetUrl(`packs/strokes/${c}.json`)).then((r) =>
+    r.ok && (r.headers.get('content-type') ?? '').includes('json') ? r.json() : Promise.reject(new Error(`No stroke data for ${c}`)),
+  );
 }
 
 /** Stroke-order animation from bundled hanzi-writer-data (Arphic licence). */
@@ -49,7 +52,7 @@ export default function StrokeOrder({ char, size = 160 }: { char: string; size?:
   return (
     <div className="flex flex-col items-center gap-2">
       <div ref={ref} data-testid="stroke-order" className="rounded-2xl border border-line bg-paper" style={{ width: size, height: size }} />
-      <button type="button" className="btn-secondary text-sm" onClick={() => writerRef.current?.animateCharacter()}>
+      <button type="button" className="btn-secondary text-sm" onClick={() => writerRef.current?.animateCharacter().catch(() => {})}>
         ▶ Play stroke order
       </button>
     </div>

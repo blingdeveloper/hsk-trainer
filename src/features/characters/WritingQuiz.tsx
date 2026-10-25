@@ -64,7 +64,8 @@ export default function WritingQuiz({ char, mode, size = 260, onFinish }: Props)
     });
     writerRef.current = writer;
     if (mode === 'watch') {
-      void writer.animateCharacter();
+      // Missing stroke data is reported by charDataLoader; don't leave the rejection unhandled.
+      writer.animateCharacter().catch(() => {});
     } else {
       writer
         .quiz({
@@ -76,7 +77,8 @@ export default function WritingQuiz({ char, mode, size = 260, onFinish }: Props)
             onFinishRef.current?.(totalMistakes);
           },
         })
-        .then(() => live && setReadyKey(quizKey));
+        .then(() => live && setReadyKey(quizKey))
+        .catch(() => {});
     }
     return () => {
       live = false;

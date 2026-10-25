@@ -57,7 +57,7 @@ const questions = [
     { id: 'c-r3-1', prompt: '你想喝点儿什么？', pinyin: 'Nǐ xiǎng hē diǎnr shénme?', correctAnswer: 'B', explanation: '"What would you like to drink?" The reply: "I\'d like tea."' },
     { id: 'c-r3-2', prompt: '你的生日是几月几号？', pinyin: 'Nǐ de shēngrì shì jǐ yuè jǐ hào?', correctAnswer: 'E', explanation: '几月几号 asks for a date. The reply gives one: the 10th of next month.' },
     { id: 'c-r3-3', prompt: '那个女孩儿是你的家人吗？', pinyin: 'Nàge nǚháir shì nǐ de jiārén ma?', correctAnswer: 'A', explanation: 'A yes/no question about family. The reply: "Yes, she\'s my younger sister."' },
-    { id: 'c-r3-4', prompt: '你现在在做什么？', pinyin: 'Nǐ xiànzài zài zuò shénme?', correctAnswer: 'D', explanation: '在做什么 asks what you are doing right now. 在…呢 in the reply also marks an action in progress.' },
+    { id: 'c-r3-4', prompt: '你现在在做什么？', pinyin: 'Nǐ xiànzài zài zuò shénme?', correctAnswer: 'D', explanation: '在做什么 asks what you are doing right now. In the reply, 在家 means "at home", and 呢 at the end shows the action is going on now.' },
     { id: 'c-r3-5', prompt: '明天你能和我去医院吗？', pinyin: 'Míngtiān nǐ néng hé wǒ qù yīyuàn ma?', correctAnswer: 'C', explanation: 'A request to go together. 没问题 (no problem) agrees to it.' },
   ]),
   ...inGroup(r4, [

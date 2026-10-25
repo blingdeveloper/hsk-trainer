@@ -27,7 +27,7 @@ const groups: QuestionGroup[] = [
     options: [
       { key: 'A', text: '坐地铁去，很快。', pinyin: 'Zuò dìtiě qù, hěn kuài.' },
       { key: 'B', text: '不贵，五十块钱。', pinyin: 'Bú guì, wǔshí kuài qián.' },
-      { key: 'C', text: '我也不知道，你问问老师吧。', pinyin: 'Wǒ yě bù zhīdào, nǐ wènwen lǎoshī ba.' },
+      { key: 'C', text: '就是"学习"的"学"。', pinyin: 'Jiù shì "xuéxí" de "xué".' },
       { key: 'D', text: '好啊，几点见？', pinyin: 'Hǎo a, jǐ diǎn jiàn?' },
       { key: 'E', text: '他生病了，在医院。', pinyin: 'Tā shēngbìng le, zài yīyuàn.' },
       { key: 'F', text: '今天天气很好。', pinyin: 'Jīntiān tiānqì hěn hǎo.' },
@@ -97,10 +97,10 @@ const questions: Question[] = [
   },
   {
     ...ORIGINAL, id: 'a-r2-5', groupId: 'a-r2', skill: 'reading', taskType: 'reading-2-word-bank',
-    prompt: '明天晚上我们（ ）去看电影吧。',
-    pinyin: 'Míngtiān wǎnshang wǒmen ( ) qù kàn diànyǐng ba.',
+    prompt: '我想跟你（ ）去看电影。',
+    pinyin: 'Wǒ xiǎng gēn nǐ ( ) qù kàn diànyǐng.',
     correctAnswer: 'B',
-    explanation: '一起 (together) goes before the verb phrase: "Let\'s go and see a film together tomorrow evening." 吧 makes it a suggestion.',
+    explanation: '跟…一起 + verb means "do something together with…": "I want to go and see a film with you." 一起 goes before the verb.',
   },
 
   // ---- Reading Part 3: match the reply ----
@@ -132,7 +132,7 @@ const questions: Question[] = [
     ...ORIGINAL, id: 'a-r3-5', groupId: 'a-r3', skill: 'reading', taskType: 'reading-3-response-match',
     prompt: '这个字怎么读？', pinyin: 'Zhège zì zěnme dú?',
     correctAnswer: 'C',
-    explanation: '"How do you read this character?" The speaker doesn\'t know and suggests asking the teacher.',
+    explanation: '"How do you read this character?" A common way to answer is to name a word that uses it: "It\'s the 学 in 学习", so it\'s read xué.',
   },
 
   // ---- Reading Part 4: short passages ----
