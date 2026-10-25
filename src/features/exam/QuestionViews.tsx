@@ -12,6 +12,8 @@ interface SectionProps {
   answers: Answers;
   locked: Set<string>;
   showFeedback: boolean;
+  /** Pinyin above reading questions and options. Writing Part 2 always shows it: it is the prompt. */
+  showPinyin?: boolean;
   onAnswer?: (questionId: string, value: string) => void;
   onCheck?: (q: Question) => void;
 }
@@ -30,23 +32,29 @@ export function SectionBody({ paper, skill, ...rest }: SectionProps) {
 
 function GroupBlock({ group, paper, ...rest }: Omit<SectionProps, 'skill'> & { group: QuestionGroup }) {
   const qs = paper.questions.filter((q) => q.groupId === group.id);
+  const showPinyin = rest.showPinyin ?? true;
   return (
-    <section className="card space-y-4">
-      <div>
-        <p className="text-xs uppercase tracking-wide text-muted">{group.officialPart}</p>
-        <p className="text-sm">{group.instructions}</p>
+    <section className="card space-y-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="eyebrow">{group.officialPart}</p>
+        <p className="text-sm text-muted">{group.instructions}</p>
       </div>
       {group.options && (
-        <ul className="grid grid-cols-1 gap-x-4 gap-y-1 rounded-xl bg-paper p-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-2 rounded-2xl bg-paper p-3 sm:grid-cols-2 lg:grid-cols-3">
           {group.options.map((o) => (
-            <li key={o.key} className="han">
-              <span className="font-sans font-semibold">{o.key}</span> {o.text}{' '}
-              {o.pinyin && <span className="font-sans text-sm text-muted">{o.pinyin}</span>}
+            <li key={o.key} className="flex items-baseline gap-2 rounded-xl px-2 py-1">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-card text-xs font-semibold shadow-[var(--shadow-soft)]">{o.key}</span>
+              <span>
+                <span className="han text-lg" lang="zh-CN">
+                  {o.text}
+                </span>
+                {showPinyin && o.pinyin && <span className="block text-xs text-muted">{o.pinyin}</span>}
+              </span>
             </li>
           ))}
         </ul>
       )}
-      <ol className="space-y-4">
+      <ol className="space-y-5">
         {qs.map((q) => (
           <QuestionItem key={q.id} number={paper.questions.indexOf(q) + 1} q={q} options={q.options ?? group.options ?? []} {...rest} />
         ))}
@@ -96,7 +104,7 @@ export function CharacterAnswerInput({
       <input
         aria-label={label}
         lang="zh-CN"
-        className="han h-12 w-24 rounded-xl border border-line bg-card text-center text-2xl"
+        className="han h-14 w-24 rounded-2xl border border-line bg-card text-center text-3xl"
         value={draft}
         disabled={disabled}
         autoComplete="off"
@@ -128,20 +136,22 @@ function QuestionItem({
   answers,
   locked,
   showFeedback,
+  showPinyin = true,
   onAnswer,
   onCheck,
 }: Omit<SectionProps, 'skill' | 'paper'> & { q: Question; number: number; options: Option[] }) {
   const [drawing, setDrawing] = useState(false);
+  const pinyinVisible = showPinyin || q.taskType === 'writing-2-character';
   const answer = answers[q.id];
   const isLocked = locked.has(q.id);
   const reveal = showFeedback && isLocked;
   const correct = isCorrect(q, answer);
 
   return (
-    <li className="border-t border-line pt-4 first:border-0 first:pt-0" data-testid={`q-${q.id}`}>
-      <div className="flex gap-2">
-        <span className="font-semibold text-muted">{number}.</span>
-        <div className="flex-1 space-y-2">
+    <li className="border-t border-line pt-5 first:border-0 first:pt-0" data-testid={`q-${q.id}`}>
+      <div className="flex gap-3">
+        <span className="mt-1 flex h-7 min-w-7 items-center justify-center rounded-full bg-blush px-1.5 text-xs font-semibold text-rose">{number}</span>
+        <div className="flex-1 space-y-3">
           {q.component ? (
             <p className="han text-2xl" lang="zh-CN">
               {[...q.component.word].map((c, i) =>
@@ -157,12 +167,12 @@ function QuestionItem({
             </p>
           ) : (
             <>
-              {q.pinyin && <p className="text-sm text-muted">{q.pinyin}</p>}
-              <p className="han text-xl" lang="zh-CN">
+              {pinyinVisible && q.pinyin && <p className="text-sm text-muted">{q.pinyin}</p>}
+              <p className="han text-2xl leading-relaxed" lang="zh-CN">
                 {q.prompt}
               </p>
               {q.question && (
-                <p className="han text-lg" lang="zh-CN">
+                <p className="han text-lg font-medium" lang="zh-CN">
                   {q.question}
                 </p>
               )}
@@ -201,12 +211,12 @@ function QuestionItem({
                 const chosen = answer === o.key;
                 const state =
                   reveal && o.key === q.correctAnswer
-                    ? 'border-good bg-good/10'
+                    ? 'border-good bg-sage text-ink'
                     : reveal && chosen
                       ? 'border-bad bg-bad/10'
                       : chosen
-                        ? 'border-rose bg-blush'
-                        : 'border-line bg-card';
+                        ? 'border-rose bg-rose text-on-rose shadow-[var(--shadow-soft)]'
+                        : 'border-line bg-card hover:border-rose/50 hover:bg-blush';
                 return (
                   <button
                     key={o.key}
@@ -215,10 +225,10 @@ function QuestionItem({
                     aria-checked={chosen}
                     disabled={isLocked}
                     onClick={() => onAnswer?.(q.id, o.key)}
-                    className={`han min-h-11 min-w-11 rounded-xl border px-3 py-1.5 ${state} disabled:cursor-default`}
+                    className={`choice han min-w-12 ${state} disabled:cursor-default`}
                   >
                     <span className="font-sans font-semibold">{o.key}</span>
-                    {q.options && <span className="ml-1">{o.text}</span>}
+                    {q.options && <span className="ml-1.5 text-lg">{o.text}</span>}
                   </button>
                 );
               })}
@@ -240,9 +250,17 @@ function QuestionItem({
 
 export function Feedback({ q, answer, correct }: { q: Question; answer?: string; correct: boolean }) {
   return (
-    <div className={`rounded-xl p-3 text-sm ${correct ? 'bg-good/10' : 'bg-bad/10'}`} data-testid="feedback">
-      <p className="font-medium">{correct ? '✓ Correct' : `✗ ${answer ? `You chose ${answer}.` : 'Not answered.'} Answer: ${q.correctAnswer}`}</p>
-      <p className="mt-1">{q.explanation}</p>
+    <div className={`flex gap-3 rounded-2xl p-4 text-sm ${correct ? 'bg-sage' : 'bg-bad/10'}`} data-testid="feedback">
+      <span
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${correct ? 'bg-good text-card' : 'bg-bad text-card'}`}
+        aria-hidden
+      >
+        {correct ? '✓' : '✗'}
+      </span>
+      <div>
+        <p className="font-medium">{correct ? 'Correct' : `${answer ? `You chose ${answer}.` : 'Not answered.'} Answer: ${q.correctAnswer}`}</p>
+        <p className="mt-1 leading-relaxed">{q.explanation}</p>
+      </div>
     </div>
   );
 }

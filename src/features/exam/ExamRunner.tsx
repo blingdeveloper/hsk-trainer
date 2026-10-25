@@ -5,6 +5,9 @@ import { href } from '../../lib/router';
 import type { Paper } from './papers';
 import { SectionBody } from './QuestionViews';
 import { formatClock, isCorrect, scoreSections, type Answers } from './scoring';
+import { useSettings } from '../../lib/useSettings';
+import { ProgressBar, Ring } from '../../ui/Progress';
+import Switch from '../../ui/Switch';
 
 export const SECTION_LABEL: Record<Skill, string> = { reading: 'Reading 阅读', writing: 'Writing 书写' };
 
@@ -40,6 +43,7 @@ export default function ExamRunner({ paper, saved, onExit }: { paper: Paper; sav
   const [locked, setLocked] = useState(() => new Set(saved.locked));
   const [sectionIndex, setSectionIndex] = useState(saved.sectionIndex);
   const [confirming, setConfirming] = useState(false);
+  const [settings, updateSettings] = useSettings();
   const remaining = useRef(saved.remainingMs ?? 0);
   const submitted = useRef(new Set<number>());
   const checking = useRef(new Set<string>());
@@ -144,19 +148,29 @@ export default function ExamRunner({ paper, saved, onExit }: { paper: Paper; sav
     const wrong = paper.questions.length - correct;
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Review: {paper.title}</h1>
-        <section className="card" data-testid="score">
-          <p className="text-3xl font-semibold">
-            {correct} / {paper.questions.length}
-          </p>
-          <ul className="mt-2 text-sm text-muted">
+        <p className="eyebrow">Review</p>
+        <h1 className="font-display text-3xl font-semibold md:text-4xl">{paper.title}</h1>
+        <section className="card flex flex-wrap items-center gap-6" data-testid="score">
+          <Ring value={correct} max={paper.questions.length} size={104} label={`${correct} of ${paper.questions.length} correct`}>
+            <span className="font-display text-2xl">{Math.round((correct / paper.questions.length) * 100)}%</span>
+          </Ring>
+          <div className="min-w-48 flex-1 space-y-3">
+            <p className="font-display text-3xl font-semibold">
+              {correct} / {paper.questions.length}
+            </p>
             {scores.map((s) => (
-              <li key={s.skill}>
-                {SECTION_LABEL[s.skill]}: {s.correct}/{s.total}
-              </li>
+              <div key={s.skill} className="space-y-1">
+                <p className="flex justify-between text-sm">
+                  <span>{SECTION_LABEL[s.skill]}</span>
+                  <span className="text-muted">
+                    {s.correct}/{s.total}
+                  </span>
+                </p>
+                <ProgressBar value={s.correct} max={s.total} label={`${SECTION_LABEL[s.skill]} score`} tone="good" />
+              </div>
             ))}
-          </ul>
-          <p className="mt-2 text-xs text-muted">Raw score on original practice questions. This doesn't predict your official result.</p>
+            <p className="text-xs text-muted">Raw score on original practice questions. This doesn't predict your official result.</p>
+          </div>
         </section>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn-primary" onClick={onExit}>
@@ -183,14 +197,17 @@ export default function ExamRunner({ paper, saved, onExit }: { paper: Paper; sav
 
   return (
     <div className="space-y-4">
-      <header className="sticky top-0 z-10 -mx-4 flex items-center justify-between border-b border-line bg-paper/95 px-4 py-2 backdrop-blur md:mx-0 md:rounded-b-xl md:px-5">
-        <div>
-          <p className="font-medium">{SECTION_LABEL[skill]}</p>
-          <p className="text-xs text-muted">
-            {paper.title} · {answeredCount}/{qs.length} answered · {mode === 'timed' ? 'Timed' : 'Guided'} ·{' '}
-            <span className="text-rose">Original practice</span>
-          </p>
-        </div>
+      <header className="sticky top-0 z-10 -mx-4 space-y-2 border-b border-line bg-paper/90 px-4 pb-3 pt-3 backdrop-blur md:mx-0 md:rounded-b-3xl md:px-5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-display text-lg font-semibold">{SECTION_LABEL[skill]}</p>
+            <p className="truncate text-xs text-muted">
+              {paper.title} · {answeredCount}/{qs.length} answered · {mode === 'timed' ? 'Timed' : 'Guided'} ·{' '}
+              <span className="text-rose">Original practice</span>
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Switch checked={settings.showPinyin} onChange={(v) => updateSettings({ showPinyin: v })} label="Pinyin" />
         {mode === 'timed' && (
           <SectionTimer
             key={sectionIndex}
@@ -199,6 +216,9 @@ export default function ExamRunner({ paper, saved, onExit }: { paper: Paper; sav
             onExpire={() => submitSection(sectionIndex, true)}
           />
         )}
+          </div>
+        </div>
+        <ProgressBar value={answeredCount} max={qs.length} label="Questions answered in this section" />
       </header>
 
       <SectionBody
@@ -207,6 +227,7 @@ export default function ExamRunner({ paper, saved, onExit }: { paper: Paper; sav
         answers={answers}
         locked={locked}
         showFeedback={mode === 'guided'}
+        showPinyin={settings.showPinyin}
         onAnswer={(id, value) => {
           if (locked.has(id)) return;
           setConfirming(false);
@@ -269,7 +290,11 @@ function SectionTimer({ initialMs, onTick, onExpire }: { initialMs: number; onTi
   }, []);
 
   return (
-    <p className={`font-mono text-lg ${left < 60_000 ? 'text-bad' : ''}`} role="timer" aria-label="Time left in this section">
+    <p
+      className={`rounded-full px-3 py-1 font-mono text-lg tabular-nums ${left < 60_000 ? 'bg-bad/10 text-bad' : 'bg-blush'}`}
+      role="timer"
+      aria-label="Time left in this section"
+    >
       {formatClock(left)}
     </p>
   );

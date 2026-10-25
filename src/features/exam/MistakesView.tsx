@@ -1,3 +1,4 @@
+import PageHeader from '../../ui/PageHeader';
 import { useEffect, useMemo, useState } from 'react';
 import type { TaskType } from '../../content/types';
 import { db } from '../../db/db';
@@ -39,19 +40,23 @@ export default function MistakesView() {
 
   return (
     <div className="space-y-4">
-      <header>
-        <h1 className="text-2xl font-semibold md:text-3xl">My mistakes</h1>
+      <PageHeader han="改错 · gǎicuò" title="My mistakes">
         <p className="text-sm text-muted">
           Questions whose latest answer was wrong. Answer one correctly when you redo it and it moves to "Fixed".
         </p>
-      </header>
+      </PageHeader>
 
       {open.length === 0 ? (
-        <section className="card" data-testid="no-mistakes">
+        <section className="card flex items-center gap-4" data-testid="no-mistakes">
+          <span className="han flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-sage text-2xl text-good" lang="zh-CN" aria-hidden>
+            好
+          </span>
+          <div>
           <p className="font-medium">Nothing to fix right now.</p>
           <p className="text-sm text-muted">
             Wrong answers from practice sets and mock exams appear here. <a className="text-rose underline" href={href({ name: 'practice' })}>Go to practice →</a>
           </p>
+          </div>
         </section>
       ) : (
         <>
@@ -97,7 +102,7 @@ function FilterChip({ active, onClick, label }: { active: boolean; onClick: () =
       role="radio"
       aria-checked={active}
       onClick={onClick}
-      className={`min-h-11 rounded-full border px-4 py-1.5 text-sm ${active ? 'border-rose bg-blush' : 'border-line bg-card'}`}
+      className={`min-h-11 rounded-full border px-4 py-1.5 text-sm transition ${active ? 'border-rose bg-rose text-on-rose' : 'border-line bg-card hover:bg-blush'}`}
     >
       {label}
     </button>

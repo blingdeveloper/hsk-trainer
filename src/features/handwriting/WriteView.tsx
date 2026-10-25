@@ -1,3 +1,4 @@
+import PageHeader from '../../ui/PageHeader';
 import { href } from '../../lib/router';
 import { useWide } from '../../lib/useWide';
 import HandwritingPad from './HandwritingPad';
@@ -6,16 +7,15 @@ export default function WriteView() {
   const wide = useWide();
   return (
     <div className="space-y-4">
-      <header>
-        <h1 className="text-2xl font-semibold md:text-3xl">Handwriting dictionary</h1>
+      <PageHeader han="手写 · shǒuxiě" title="Handwriting lookup">
         <p className="text-sm text-muted">Draw a character, then tap the right one. Recognition runs on your device and nothing is sent anywhere.</p>
-      </header>
+      </PageHeader>
       <div className="grid items-start gap-4 md:grid-cols-[auto_1fr]">
-        <section className="card md:p-6">
+        <section className="card flex justify-center md:p-8">
           <HandwritingPad size={wide ? 380 : Math.min(300, window.innerWidth - 72)} onPick={(c) => (location.hash = href({ name: 'entry', word: c }))} />
         </section>
         <section className="card hidden space-y-2 text-sm text-muted md:block">
-          <h2 className="font-medium text-ink">Tips for better results</h2>
+          <h2 className="font-display text-lg font-semibold text-ink">Tips for better results</h2>
           <ul className="list-disc space-y-1 pl-5">
             <li>Write one character, filling most of the box.</li>
             <li>Use the standard stroke order and count: top to bottom, left to right.</li>

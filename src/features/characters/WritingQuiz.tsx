@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import HanziWriter from 'hanzi-writer';
 import { loadStrokeData } from '../strokes/StrokeOrder';
+import { cssVar, useColorScheme } from '../../lib/theme';
 
 export type QuizMode = 'watch' | 'trace' | 'memory';
 
@@ -27,8 +28,9 @@ export default function WritingQuiz({ char, mode, size = 260, onFinish }: Props)
   const [done, setDone] = useState(false);
   const [error, setError] = useState(false);
   const [run, setRun] = useState(0);
+  const scheme = useColorScheme();
   /** Key of the quiz that has loaded its data and accepts input. Compared per render, so it is never stale. */
-  const quizKey = `${char}|${mode}|${size}|${run}`;
+  const quizKey = `${char}|${mode}|${size}|${run}|${scheme}`;
   const [readyKey, setReadyKey] = useState('');
   const ready = readyKey === quizKey;
 
@@ -47,10 +49,10 @@ export default function WritingQuiz({ char, mode, size = 260, onFinish }: Props)
       padding: 10,
       showCharacter: mode === 'watch',
       showOutline: mode !== 'memory',
-      strokeColor: '#2b2326',
-      outlineColor: '#eedfdf',
-      highlightColor: '#c9677a',
-      drawingColor: '#2b2326',
+      strokeColor: cssVar('--color-ink'),
+      outlineColor: cssVar('--color-line'),
+      highlightColor: cssVar('--color-rose'),
+      drawingColor: cssVar('--color-ink'),
       drawingWidth: 6,
       delayBetweenStrokes: 300,
       charDataLoader: (c, onLoad, onError) => {
@@ -91,8 +93,8 @@ export default function WritingQuiz({ char, mode, size = 260, onFinish }: Props)
         ref={ref}
         data-testid="writing-quiz"
         data-ready={mode === 'watch' || ready}
-        className="rounded-2xl border border-line bg-card shadow-sm"
-        style={{ width: size, height: size, touchAction: 'none', backgroundImage: GRID, backgroundSize: '100% 100%' }}
+        className="rounded-3xl border border-line bg-card shadow-[var(--shadow-soft)]"
+        style={{ width: size, height: size, touchAction: 'none', backgroundImage: grid(cssVar('--color-line')), backgroundSize: '100% 100%' }}
       />
       <div className="flex items-center gap-3 text-sm" aria-live="polite">
         {mode !== 'watch' && (
@@ -109,6 +111,8 @@ export default function WritingQuiz({ char, mode, size = 260, onFinish }: Props)
 }
 
 // Rice-grid (米字格) guide drawn as an SVG background.
-const GRID = `url("data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><g stroke="#eedfdf" stroke-width="0.6" stroke-dasharray="2 2"><line x1="50" y1="0" x2="50" y2="100"/><line x1="0" y1="50" x2="100" y2="50"/><line x1="0" y1="0" x2="100" y2="100"/><line x1="100" y1="0" x2="0" y2="100"/></g></svg>',
-)}")`;
+function grid(color: string) {
+  return `url("data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><g stroke="${color}" stroke-width="0.6" stroke-dasharray="2 2"><line x1="50" y1="0" x2="50" y2="100"/><line x1="0" y1="50" x2="100" y2="50"/><line x1="0" y1="0" x2="100" y2="100"/><line x1="100" y1="0" x2="0" y2="100"/></g></svg>`,
+  )}")`;
+}

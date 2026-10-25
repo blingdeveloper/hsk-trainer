@@ -1,3 +1,4 @@
+import PageHeader from '../../ui/PageHeader';
 import { useCallback, useEffect, useState } from 'react';
 import { db, recordWritingQuiz, RECALLS_TO_LEARN, type WritingProgress } from '../../db/db';
 import { assetUrl } from '../../lib/assets';
@@ -5,6 +6,7 @@ import { href } from '../../lib/router';
 import { useDictionary } from '../dictionary/useDictionary';
 import WritingQuiz, { type QuizMode } from './WritingQuiz';
 import { useWide } from '../../lib/useWide';
+import { ProgressBar, Ring } from '../../ui/Progress';
 
 const SESSION_SIZE = 10;
 
@@ -17,8 +19,8 @@ function statusOf(p?: WritingProgress): Status {
 
 const STATUS_STYLE: Record<Status, string> = {
   new: 'border-line bg-card',
-  practising: 'border-rose/40 bg-blush',
-  learned: 'border-good/40 bg-good/10',
+  practising: 'border-rose/30 bg-blush',
+  learned: 'border-good/30 bg-sage',
 };
 
 let charsPromise: Promise<string[]> | undefined;
@@ -66,21 +68,24 @@ export default function CharactersView({ char }: { char?: string }) {
 
   return (
     <div className="space-y-4">
-      <header>
-        <h1 className="text-2xl font-semibold">Writing characters</h1>
+      <PageHeader han="汉字 · hànzì" title="Writing characters">
         <p className="text-sm text-muted">
           The {chars.length || 100} characters the official HSK 1–2 syllabus says you must be able to write (书写字). A character counts as
           learned after you write it from memory {RECALLS_TO_LEARN} times with at most one mistake.
         </p>
-      </header>
+      </PageHeader>
 
-      <section className="card space-y-3">
-        <div className="h-2 overflow-hidden rounded-full bg-line" aria-hidden>
-          <div className="h-full bg-good" style={{ width: `${chars.length ? (learned / chars.length) * 100 : 0}%` }} />
+      <section className="card flex flex-wrap items-center gap-5">
+        <Ring value={learned} max={chars.length || 100} size={88} label={`${learned} of ${chars.length} learned`}>
+          <span className="font-display text-xl">{learned}</span>
+          <span className="block text-[10px] font-normal text-muted">of {chars.length || 100}</span>
+        </Ring>
+        <div className="min-w-48 flex-1 space-y-1">
+          <p className="font-medium">Your writing progress</p>
+          <p className="text-sm text-muted" data-testid="writing-summary">
+            <strong className="text-ink">{learned}</strong> learned · {practising} practising · {chars.length - learned - practising} new
+          </p>
         </div>
-        <p className="text-sm" data-testid="writing-summary">
-          <strong>{learned}</strong> learned · {practising} practising · {chars.length - learned - practising} new
-        </p>
         <button
           type="button"
           className="btn-primary"
@@ -100,7 +105,8 @@ export default function CharactersView({ char }: { char?: string }) {
                 href={href({ name: 'characters', char: c })}
                 aria-label={`${c}, ${s}`}
                 data-status={s}
-                className={`han flex aspect-square items-center justify-center rounded-xl border text-2xl hover:border-rose ${STATUS_STYLE[s]}`}
+                lang="zh-CN"
+                className={`han flex aspect-square items-center justify-center rounded-2xl border text-2xl shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:border-rose md:text-3xl ${STATUS_STYLE[s]}`}
               >
                 {c}
               </a>
@@ -111,7 +117,7 @@ export default function CharactersView({ char }: { char?: string }) {
       <p className="flex gap-4 text-xs text-muted">
         <span><span className="mr-1 inline-block h-3 w-3 rounded border border-line bg-card align-middle" />New</span>
         <span><span className="mr-1 inline-block h-3 w-3 rounded bg-blush align-middle" />Practising</span>
-        <span><span className="mr-1 inline-block h-3 w-3 rounded bg-good/30 align-middle" />Learned</span>
+        <span><span className="mr-1 inline-block h-3 w-3 rounded bg-sage align-middle" />Learned</span>
       </p>
     </div>
   );
@@ -136,7 +142,7 @@ function ModeTabs({ mode, setMode }: { mode: QuizMode; setMode: (m: QuizMode) =>
     ['memory', 'From memory'],
   ];
   return (
-    <div className="flex gap-1 rounded-xl bg-paper p-1" role="tablist">
+    <div className="flex gap-1 rounded-full bg-paper p-1" role="tablist">
       {tabs.map(([m, label]) => (
         <button
           key={m}
@@ -144,7 +150,7 @@ function ModeTabs({ mode, setMode }: { mode: QuizMode; setMode: (m: QuizMode) =>
           role="tab"
           aria-selected={mode === m}
           onClick={() => setMode(m)}
-          className={`flex-1 rounded-lg px-3 py-2 text-sm min-h-11 ${mode === m ? 'bg-card font-medium shadow-sm' : 'text-muted'}`}
+          className={`min-h-11 flex-1 rounded-full px-3 py-2 text-sm transition ${mode === m ? 'bg-card font-medium shadow-[var(--shadow-soft)]' : 'text-muted hover:text-ink'}`}
         >
           {label}
         </button>
@@ -170,7 +176,7 @@ function CharacterPractice({ char, progress, onRecorded }: { char: string; progr
         <div className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="han text-4xl">{char}</h1>
+            <h1 className="han text-6xl" lang="zh-CN">{char}</h1>
             <Gloss char={char} />
           </div>
           <div className="text-right text-sm">
@@ -215,7 +221,8 @@ function Session({ queue, onExit }: { queue: string[]; onExit: () => void }) {
     const good = Object.values(results).filter((m) => m <= 1).length;
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Session done</h1>
+        <p className="eyebrow">Session done</p>
+        <h1 className="font-display text-3xl font-semibold">Nice work.</h1>
         <section className="card" data-testid="session-summary">
           <p className="text-3xl font-semibold">
             {good} / {queue.length}
@@ -223,7 +230,7 @@ function Session({ queue, onExit }: { queue: string[]; onExit: () => void }) {
           <p className="text-sm text-muted">written from memory with at most one mistake</p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {queue.map((c) => (
-              <li key={c} className={`han rounded-lg border px-2 py-1 text-xl ${results[c] !== undefined && results[c] <= 1 ? 'border-good/40 bg-good/10' : 'border-bad/30 bg-bad/10'}`}>
+              <li key={c} lang="zh-CN" className={`han rounded-xl border px-2.5 py-1 text-xl ${results[c] !== undefined && results[c] <= 1 ? 'border-good/40 bg-good/10' : 'border-bad/30 bg-bad/10'}`}>
                 {c}
               </li>
             ))}
@@ -245,9 +252,14 @@ function Session({ queue, onExit }: { queue: string[]; onExit: () => void }) {
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
-        <p className="font-medium">
-          Character {index + 1} / {queue.length}
-        </p>
+        <div className="flex-1 space-y-2">
+          <p className="font-medium">
+            Character {index + 1} / {queue.length}
+          </p>
+          <div className="max-w-xs">
+            <ProgressBar value={index} max={queue.length} label="Session progress" />
+          </div>
+        </div>
         <button type="button" className="text-sm text-muted hover:underline" onClick={onExit}>
           End session
         </button>

@@ -106,3 +106,9 @@ export async function recordWritingQuiz(char: string, mode: 'trace' | 'memory', 
     await db.writing.put(p);
   });
 }
+
+export async function updateSettings(patch: Partial<Omit<UserSettings, 'id'>>): Promise<UserSettings> {
+  const next = { ...(await getSettings()), ...patch };
+  await db.settings.put(next);
+  return next;
+}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ORIGINAL_LABEL } from '../../content/types';
 import { db, type ExamInProgress } from '../../db/db';
 import { href } from '../../lib/router';
+import PageHeader from '../../ui/PageHeader';
 import ExamRunner, { newExam } from './ExamRunner';
 import { summariseMistakes } from './mistakes';
 import { findPaper, MOCK_PAPERS, paperTitle, SET_PAPERS, type Paper } from './papers';
@@ -93,15 +94,17 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold md:text-3xl">HSK 2 exam practice</h1>
-        <p className="mt-1 text-sm">
-          <span className="tag">Original practice</span> <span className="text-muted">{ORIGINAL_LABEL}</span>
+      <PageHeader han="练习 · liànxí" title="Exam practice">
+        <p className="text-sm">
+          <span className="tag">Original practice</span> {ORIGINAL_LABEL}
         </p>
-      </header>
+      </PageHeader>
 
       {saved && savedPaper && (
-        <section className="card flex flex-wrap items-center gap-3 border-rose" data-testid="resume">
+        <section className="card flex flex-wrap items-center gap-4 border-rose/40 bg-blush" data-testid="resume">
+          <span className="han flex h-12 w-12 items-center justify-center rounded-2xl bg-card text-lg text-rose" lang="zh-CN" aria-hidden>
+            继续
+          </span>
           <div className="flex-1">
             <p className="font-medium">Unfinished: {savedPaper.title}</p>
             <p className="text-sm text-muted">
@@ -133,8 +136,8 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Practice sets</h2>
+        <section className="card space-y-4">
+          <h2 className="font-display text-xl font-semibold">Practice sets</h2>
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Practice set">
             {SET_PAPERS.map((p, i) => (
               <button
@@ -143,7 +146,7 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
                 role="radio"
                 aria-checked={i === setIndex}
                 onClick={() => setSetIndex(i)}
-                className={`min-h-11 rounded-xl border px-4 py-2 ${i === setIndex ? 'border-rose bg-blush' : 'border-line bg-card'}`}
+                className={`choice text-sm ${i === setIndex ? 'border-rose bg-rose text-on-rose' : 'border-line bg-card hover:bg-blush'}`}
               >
                 {p.title}
               </button>
@@ -154,19 +157,19 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
             {set.minutes.reading} min, writing {set.minutes.writing} min.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
-            <button type="button" className="card text-left hover:bg-blush" onClick={() => start(set, 'guided')}>
+            <button type="button" className="rounded-2xl border border-line p-4 text-left transition hover:-translate-y-0.5 hover:border-rose/40 hover:bg-blush" onClick={() => start(set, 'guided')}>
               <span className="block font-medium">Guided</span>
               <span className="text-sm text-muted">Check each answer and see the explanation straight away.</span>
             </button>
-            <button type="button" className="card text-left hover:bg-blush" onClick={() => start(set, 'timed')}>
+            <button type="button" className="rounded-2xl border border-line p-4 text-left transition hover:-translate-y-0.5 hover:border-rose/40 hover:bg-blush" onClick={() => start(set, 'timed')}>
               <span className="block font-medium">Timed</span>
               <span className="text-sm text-muted">No feedback until the end. Each section has a timer.</span>
             </button>
           </div>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Full mock exam</h2>
+        <section className="card space-y-4">
+          <h2 className="font-display text-xl font-semibold">Full mock exam</h2>
           <p className="text-sm text-muted">
             Same order, part sizes and pace as the official paper: Reading Part 2 (5), Part 3 (10), Part 4 (5) in{' '}
             {MOCK_PAPERS[0].minutes.reading} min, then Writing Parts 1–2 (10) in {MOCK_PAPERS[0].minutes.writing} min. Always timed. You
@@ -176,21 +179,30 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
             Not included yet: Listening (25 questions, ~17 min, then 3 min to fill in the answer sheet) and Reading Part 1 (5 picture
             questions). Mocks reuse questions from sets A–C, so you may have seen some.
           </p>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <ul className="space-y-2">
             {MOCK_PAPERS.map((p) => (
-              <button key={p.id} type="button" className="card text-left hover:bg-blush" onClick={() => start(p, 'timed')}>
-                <span className="block font-medium">{p.title}</span>
-                <span className="text-sm text-muted">
-                  {p.questions.length} questions · {(p.minutes.reading ?? 0) + (p.minutes.writing ?? 0)} min
-                </span>
-              </button>
+              <li key={p.id}>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3 text-left transition hover:border-rose/40 hover:bg-blush"
+                  onClick={() => start(p, 'timed')}
+                >
+                  <span className="font-medium">{p.title}</span>
+                  <span className="text-sm text-muted">
+                    {p.questions.length} questions · {(p.minutes.reading ?? 0) + (p.minutes.writing ?? 0)} min →
+                  </span>
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
       </div>
 
-      <a href={href({ name: 'mistakes' })} className="card flex items-center justify-between hover:bg-blush">
-        <span>
+      <a href={href({ name: 'mistakes' })} className="card-link flex items-center gap-4">
+        <span className="han flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blush text-lg text-rose" lang="zh-CN" aria-hidden>
+          改错
+        </span>
+        <span className="flex-1">
           <span className="block font-medium">My mistakes →</span>
           <span className="text-sm text-muted">Every question you got wrong, with explanations, ready to redo.</span>
         </span>
@@ -201,10 +213,10 @@ export default function ExamView({ autoResume = false }: { autoResume?: boolean 
 
       {history.length > 0 && (
         <section className="card">
-          <h2 className="font-medium">Recent attempts</h2>
-          <ul className="mt-2 space-y-1 text-sm" data-testid="history">
+          <h2 className="font-display text-lg font-semibold">Recent attempts</h2>
+          <ul className="mt-3 divide-y divide-line text-sm" data-testid="history">
             {history.map((s) => (
-              <li key={s.sessionId} className="flex justify-between gap-3">
+              <li key={s.sessionId} className="flex justify-between gap-3 py-2">
                 <span>
                   {new Date(s.timestamp).toLocaleString()} · {s.title} · {s.mode}
                 </span>

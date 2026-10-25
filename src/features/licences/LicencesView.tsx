@@ -1,3 +1,4 @@
+import PageHeader from '../../ui/PageHeader';
 import { assetUrl } from '../../lib/assets';
 
 const SOURCES = [
@@ -54,17 +55,16 @@ const SOURCES = [
 export default function LicencesView() {
   return (
     <div className="space-y-4">
-      <header>
-        <h1 className="text-2xl font-semibold">Sources &amp; Licences</h1>
+      <PageHeader han="来源 · láiyuán" title="Sources & Licences">
         <p className="text-sm text-muted">
           This app is free software under the GNU GPL v3 or later. Practice questions marked "Original practice" were written for this app.
           They are not official HSK questions.
         </p>
-      </header>
+      </PageHeader>
       <ul className="grid gap-3 md:grid-cols-2">
         {SOURCES.map((s) => (
           <li key={s.name} className="card text-sm">
-            <h2 className="font-medium text-base">{s.name}</h2>
+            <h2 className="font-display text-base font-semibold">{s.name}</h2>
             <p className="mt-1">{s.use}</p>
             <p className="mt-1">
               Licence: {s.licenceUrl ? <a className="text-rose underline" href={s.licenceUrl}>{s.licence}</a> : s.licence}

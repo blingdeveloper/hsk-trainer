@@ -6,113 +6,83 @@ import ExamView from './features/exam/ExamView';
 import LicencesView from './features/licences/LicencesView';
 import CharactersView from './features/characters/CharactersView';
 import MistakesView from './features/exam/MistakesView';
+import HomeView, { daysUntil } from './features/home/HomeView';
 import { getSettings } from './db/db';
 
-const NAV: { route: Route; label: string; han: string }[] = [
-  { route: { name: 'home' }, label: 'Home', han: '首页' },
-  { route: { name: 'write' }, label: 'Lookup', han: '手写' },
-  { route: { name: 'practice' }, label: 'Practice', han: '练习' },
-  { route: { name: 'characters' }, label: 'Characters', han: '汉字' },
-  { route: { name: 'licences' }, label: 'Sources', han: '来源' },
+const NAV: { route: Route; label: string; han: string; also?: Route['name'][] }[] = [
+  { route: { name: 'home' }, label: 'Today', han: '今' },
+  { route: { name: 'practice' }, label: 'Practice', han: '练', also: ['mistakes'] },
+  { route: { name: 'characters' }, label: 'Characters', han: '字' },
+  { route: { name: 'write' }, label: 'Lookup', han: '查', also: ['entry'] },
+  { route: { name: 'licences' }, label: 'Sources', han: '源' },
 ];
 
-function daysUntil(date: string) {
-  return Math.ceil((new Date(`${date}T00:00:00`).getTime() - Date.now()) / 86_400_000);
-}
-
-function Home() {
-  const [examDate, setExamDate] = useState<string>();
+function SidebarCountdown() {
+  const [date, setDate] = useState<string>();
   useEffect(() => {
-    getSettings().then((s) => setExamDate(s.examDate));
+    getSettings().then((s) => setDate(s.examDate));
   }, []);
+  if (!date) return null;
   return (
-    <div className="space-y-4">
-      <header>
-        <h1 className="text-2xl font-semibold md:text-3xl">HSK 2 · HSK 3.0</h1>
-        {examDate && (
-          <p className="text-muted">
-            Exam on {examDate}: <strong className="text-ink">{daysUntil(examDate)} days</strong> to go
-          </p>
-        )}
-      </header>
-      <div className="grid gap-4 md:grid-cols-3">
-        <a href={href({ name: 'practice' })} className="card block hover:bg-blush md:p-6">
-          <p className="font-medium">Exam practice →</p>
-          <p className="text-sm text-muted">3 practice sets, 3 full mock exams and your mistake notebook, all in the official HSK 2 format.</p>
-        </a>
-        <a href={href({ name: 'characters' })} className="card block hover:bg-blush md:p-6">
-          <p className="font-medium">Writing characters →</p>
-          <p className="text-sm text-muted">Learn all 100 characters you must write for HSK 1–2: watch, trace, then write from memory.</p>
-        </a>
-        <a href={href({ name: 'write' })} className="card block hover:bg-blush md:p-6">
-          <p className="font-medium">Handwriting dictionary →</p>
-          <p className="text-sm text-muted">Draw an unknown character to see its meaning, words that use it, and stroke order. Works offline.</p>
-        </a>
-      </div>
-      <OfflineStatus />
+    <div className="mx-3 mt-auto hidden rounded-2xl bg-blush p-4 md:block">
+      <p className="text-xs text-muted">HSK 2 exam in</p>
+      <p className="font-display text-2xl font-semibold">{Math.max(0, daysUntil(date))} days</p>
     </div>
-  );
-}
-
-function OfflineStatus() {
-  const [ready, setReady] = useState<boolean>();
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) return setReady(false);
-    let live = true;
-    navigator.serviceWorker.ready.then(() => live && setReady(true));
-    // Some embedded browsers never register the service worker; say so instead of waiting forever.
-    const t = setTimeout(() => navigator.serviceWorker.getRegistration().then((r) => live && !r && setReady(false)), 8000);
-    return () => {
-      live = false;
-      clearTimeout(t);
-    };
-  }, []);
-  return (
-    <p className="text-xs text-muted" data-testid="offline-status">
-      {ready === undefined && 'Preparing offline use…'}
-      {ready === true && '✓ Ready offline. Dictionary, handwriting and practice all work without internet.'}
-      {ready === false && "Offline install isn't available in this browser. Open the app in Chrome, Edge or Safari to use it offline."}
-    </p>
   );
 }
 
 export default function App() {
   const route = useRoute();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [route.name]);
+
   return (
     <div className="min-h-dvh md:flex">
       {/* Bottom tab bar on phones; left sidebar from tablet width up. */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper/95 backdrop-blur md:sticky md:top-0 md:h-dvh md:w-56 md:shrink-0 md:border-r md:border-t-0 md:py-6"
+        className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-card/90 pb-[env(safe-area-inset-bottom)] backdrop-blur md:sticky md:top-0 md:flex md:h-dvh md:w-60 md:shrink-0 md:flex-col md:border-r md:border-t-0 md:bg-paper md:py-7"
         aria-label="Main"
       >
-        <p className="hidden px-6 pb-6 md:block">
-          <span className="han mr-1 text-xl text-rose">汉</span>
-          <span className="font-semibold">HSK Trainer</span>
-        </p>
-        <ul className="mx-auto flex max-w-2xl md:mx-0 md:flex-col md:gap-1 md:px-3">
+        <a href={href({ name: 'home' })} className="mb-8 hidden items-center gap-2 px-6 md:flex">
+          <span className="han flex h-9 w-9 items-center justify-center rounded-xl bg-rose text-lg text-on-rose" lang="zh-CN">
+            汉
+          </span>
+          <span className="font-display text-lg font-semibold">HSK Trainer</span>
+        </a>
+        <ul className="mx-auto flex max-w-2xl md:mx-0 md:w-full md:flex-col md:gap-1 md:px-3">
           {NAV.map((n) => {
-            const active =
-              n.route.name === route.name || (route.name === 'entry' && n.route.name === 'write') || (route.name === 'mistakes' && n.route.name === 'practice');
+            const active = n.route.name === route.name || !!n.also?.includes(route.name);
             return (
               <li key={n.label} className="flex-1 md:flex-none">
                 <a
                   href={href(n.route)}
                   aria-current={active ? 'page' : undefined}
-                  className={`flex min-h-14 flex-col items-center justify-center text-xs md:min-h-11 md:flex-row md:justify-start md:gap-3 md:rounded-xl md:px-3 md:text-sm ${
-                    active ? 'text-rose md:bg-blush md:font-medium md:text-ink' : 'text-muted md:hover:bg-blush/60'
+                  className={`group flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] transition md:min-h-12 md:flex-row md:justify-start md:gap-3 md:rounded-2xl md:px-3 md:text-sm ${
+                    active ? 'font-medium text-ink md:bg-card md:shadow-[var(--shadow-soft)]' : 'text-muted hover:text-ink md:hover:bg-card/60'
                   }`}
                 >
-                  <span className="han text-lg leading-none">{n.han}</span>
+                  <span
+                    className={`han flex h-8 w-12 items-center justify-center rounded-full text-base transition md:h-8 md:w-8 md:rounded-xl ${
+                      active ? 'bg-rose text-on-rose' : 'bg-transparent group-hover:bg-blush'
+                    }`}
+                    lang="zh-CN"
+                    aria-hidden
+                  >
+                    {n.han}
+                  </span>
                   {n.label}
                 </a>
               </li>
             );
           })}
         </ul>
+        <SidebarCountdown />
       </nav>
-      <main className="min-w-0 flex-1 px-4 pb-24 pt-5 md:px-10 md:pb-12 md:pt-10">
+      <main className="min-w-0 flex-1 px-4 pb-28 pt-6 md:px-10 md:pb-14 md:pt-10 lg:px-14">
         <div className="mx-auto max-w-5xl">
-          {route.name === 'home' && <Home />}
+          {route.name === 'home' && <HomeView />}
           {route.name === 'write' && <WriteView />}
           {route.name === 'entry' && <EntryView key={route.word} word={route.word} />}
           {route.name === 'practice' && <ExamView autoResume={route.resume} />}

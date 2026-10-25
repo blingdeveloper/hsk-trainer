@@ -16,7 +16,9 @@ export default defineConfig({
       includeAssets: ['icon.svg'],
       workbox: {
         // Everything needed offline is precached on first visit (~6 MB).
-        globPatterns: ['**/*.{js,css,html,svg,json,txt}'],
+        globPatterns: ['**/*.{js,css,html,svg,json,txt,woff2}'],
+        // Fonts: only the Latin and Latin Extended subsets are used (pinyin tone marks need Latin Extended).
+        globIgnores: ['**/*-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
       manifest: {

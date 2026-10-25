@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { recognise, warmUpRecogniser, type Stroke } from './recogniser';
+import { cssVar, useColorScheme } from '../../lib/theme';
 
 interface Props {
   /** Called with the chosen candidate character. */
@@ -16,6 +17,7 @@ export default function HandwritingPad({ onPick, size = 280, clearOnPick = false
   const [strokeCount, setStrokeCount] = useState(0);
   const [candidates, setCandidates] = useState<string[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const scheme = useColorScheme();
 
   useEffect(() => {
     warmUpRecogniser().then(
@@ -32,7 +34,7 @@ export default function HandwritingPad({ onPick, size = 280, clearOnPick = false
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, size, size);
     // Rice-grid guide lines (米字格)
-    ctx.strokeStyle = '#eedfdf';
+    ctx.strokeStyle = cssVar('--color-line');
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -42,7 +44,7 @@ export default function HandwritingPad({ onPick, size = 280, clearOnPick = false
     ctx.moveTo(size, 0); ctx.lineTo(0, size);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.strokeStyle = '#2b2326';
+    ctx.strokeStyle = cssVar('--color-ink');
     ctx.lineWidth = Math.max(4, size / 45);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -53,7 +55,7 @@ export default function HandwritingPad({ onPick, size = 280, clearOnPick = false
       if (stroke.length === 1) ctx.lineTo(stroke[0][0] + 0.1, stroke[0][1]);
       ctx.stroke();
     }
-  }, [size]);
+  }, [size, scheme]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -121,18 +123,18 @@ export default function HandwritingPad({ onPick, size = 280, clearOnPick = false
         data-testid="handwriting-canvas"
         aria-label="Handwriting pad. Draw one Chinese character."
         style={{ width: size, height: size, touchAction: 'none' }}
-        className="rounded-2xl border border-line bg-card shadow-sm cursor-crosshair"
+        className="cursor-crosshair rounded-3xl border border-line bg-card shadow-[var(--shadow-soft)]"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       />
       <div className="flex gap-2">
-        <button type="button" onClick={undo} disabled={!strokeCount} className="btn-secondary">
-          Undo stroke
+        <button type="button" onClick={undo} disabled={!strokeCount} className="btn-secondary text-sm">
+          ↶ Undo stroke
         </button>
-        <button type="button" onClick={clear} disabled={!strokeCount} className="btn-secondary">
-          Clear
+        <button type="button" onClick={clear} disabled={!strokeCount} className="btn-secondary text-sm">
+          ✕ Clear
         </button>
       </div>
       <div className="min-h-14 w-full" aria-live="polite">
@@ -154,7 +156,8 @@ export default function HandwritingPad({ onPick, size = 280, clearOnPick = false
                     onPick(c);
                     if (clearOnPick) clear();
                   }}
-                  className="han h-12 w-12 rounded-xl border border-line bg-card text-2xl hover:bg-blush focus-visible:outline-2 focus-visible:outline-rose"
+                  lang="zh-CN"
+                  className="han h-14 w-14 rounded-2xl border border-line bg-card text-3xl shadow-[var(--shadow-soft)] transition first:border-rose hover:-translate-y-0.5 hover:border-rose/50 hover:bg-blush"
                 >
                   {c}
                 </button>

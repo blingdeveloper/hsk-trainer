@@ -1,37 +1,97 @@
 @import "tailwindcss";
 
+/* Design tokens. Every text/background pair used in the app meets WCAG AA (4.5:1) in light and dark. */
 @theme {
-  --color-paper: #fdf7f5;
+  --color-paper: #fbf7f4;
   --color-card: #ffffff;
-  --color-ink: #2b2326;
-  --color-muted: #75686c;
-  --color-blush: #f6d9d9;
-  --color-rose: #c9677a;
-  --color-line: #eedfdf;
-  --color-good: #2f7a54;
-  --color-bad: #b23a48;
-  --font-han: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --color-ink: #2a2226;
+  --color-muted: #6b5f64;
+  --color-line: #efe4e2;
+  --color-blush: #f8e4e4;
+  --color-rose: #a8445a;
+  --color-on-rose: #ffffff;
+  --color-good: #2b6e4c;
+  --color-bad: #ad3345;
+  --color-sage: #e6efe9;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-han: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+  --shadow-soft: 0 1px 2px rgb(42 34 38 / 0.04), 0 4px 16px rgb(42 34 38 / 0.05);
+  --shadow-lift: 0 2px 4px rgb(42 34 38 / 0.05), 0 10px 28px rgb(42 34 38 / 0.08);
 }
 
-html, body {
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #191517;
+    --color-card: #231e21;
+    --color-ink: #f2ebe8;
+    --color-muted: #b5a8ad;
+    --color-line: #3a3035;
+    --color-blush: #3b2a30;
+    --color-rose: #e8909f;
+    --color-on-rose: #191517;
+    --color-good: #7fcaa0;
+    --color-bad: #f08a97;
+    --color-sage: #22322a;
+    --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-lift: 0 4px 18px rgb(0 0 0 / 0.4);
+    color-scheme: dark;
+  }
+}
+
+html,
+body {
   background: var(--color-paper);
   color: var(--color-ink);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-.han { font-family: var(--font-han); }
+.han {
+  font-family: var(--font-han);
+}
 
-@layer components {
-  .btn-primary {
-    @apply rounded-xl bg-rose px-4 py-2.5 font-medium text-white min-h-11 hover:opacity-90 disabled:opacity-40;
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-rose);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
   }
-  .btn-secondary {
-    @apply rounded-xl border border-line bg-card px-4 py-2.5 min-h-11 hover:bg-blush disabled:opacity-40;
-  }
-  .card {
-    @apply rounded-2xl border border-line bg-card p-4 sm:p-5;
-  }
-  .tag {
-    @apply inline-block rounded-full bg-blush px-2.5 py-0.5 text-xs font-medium text-ink;
-  }
+}
+
+@utility btn-primary {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-rose px-5 py-2.5 font-medium text-on-rose shadow-[var(--shadow-soft)] transition hover:brightness-110 active:scale-[0.98] disabled:opacity-40;
+}
+@utility btn-secondary {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-line bg-card px-5 py-2.5 transition hover:border-rose/40 hover:bg-blush disabled:opacity-40;
+}
+@utility btn-ghost {
+  @apply inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-sm text-muted transition hover:bg-blush hover:text-ink;
+}
+@utility card {
+  @apply rounded-3xl border border-line bg-card p-5 shadow-[var(--shadow-soft)] sm:p-6;
+}
+@utility card-link {
+  @apply card block transition hover:-translate-y-0.5 hover:border-rose/30 hover:shadow-[var(--shadow-lift)];
+}
+@utility tag {
+  @apply inline-flex items-center gap-1 rounded-full bg-blush px-2.5 py-0.5 text-xs font-medium text-ink;
+}
+@utility eyebrow {
+  @apply text-sm font-medium tracking-wide text-rose;
+}
+@utility choice {
+  @apply min-h-11 rounded-2xl border px-4 py-2 transition;
 }
