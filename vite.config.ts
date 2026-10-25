@@ -12,7 +12,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt': a new version waits until the person chooses to reload (never mid-exam).
+      registerType: 'prompt',
       includeAssets: ['icon.svg'],
       workbox: {
         // Everything needed offline is precached on first visit (~6 MB).

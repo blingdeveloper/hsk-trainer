@@ -48,7 +48,9 @@ Offline mode only works in the **production build** (`npm run build && npm run p
 | `src/content/types.ts` | Question types and official HSK 2 timing |
 | `src/features/characters/` | Writing trainer for the 100 HSK 1–2 writing characters |
 | `.github/workflows/deploy.yml` | Builds, tests and publishes to GitHub Pages on push to `main` |
-| `src/db/db.ts` | IndexedDB storage (attempts, saved items, settings) |
+| `src/db/db.ts` | IndexedDB storage (attempts, saved items, settings, exam in progress) |
+| `src/db/backup.ts` | Backup export, checks and restore |
+| `src/features/settings/` | Settings screen (exam date, pinyin, backup, storage) |
 | `scripts/build-data/` | Download and build scripts for the data packs |
 | `docs/` | Phase 0 proposal and milestone reports |
 
@@ -58,3 +60,7 @@ Offline mode only works in the **production build** (`npm run build && npm run p
 2. On GitHub, open the repository's **Settings → Pages** and set **Source** to **GitHub Actions**.
 3. Every push to `main` then runs the tests and publishes to `https://<your-username>.github.io/<repo>/`.
 4. On Android: open that link in Chrome, wait for "✓ Ready offline", then use **⋮ → Add to Home screen**.
+
+## Your data
+
+Progress lives only in the browser on each device. Use **Settings → Save backup file** now and then, and **Restore from file…** on a new device or after clearing browser data.

@@ -8,25 +8,42 @@ import CharactersView from './features/characters/CharactersView';
 import MistakesView from './features/exam/MistakesView';
 import HomeView, { daysUntil } from './features/home/HomeView';
 import { getSettings } from './db/db';
+import SettingsView from './features/settings/SettingsView';
+import { useUpdateAvailable } from './lib/updates';
 
 const NAV: { route: Route; label: string; han: string; also?: Route['name'][] }[] = [
   { route: { name: 'home' }, label: 'Today', han: '今' },
   { route: { name: 'practice' }, label: 'Practice', han: '练', also: ['mistakes'] },
   { route: { name: 'characters' }, label: 'Characters', han: '字' },
   { route: { name: 'write' }, label: 'Lookup', han: '查', also: ['entry'] },
-  { route: { name: 'licences' }, label: 'Sources', han: '源' },
+  { route: { name: 'settings' }, label: 'Settings', han: '设', also: ['licences'] },
 ];
 
-function SidebarCountdown() {
+function SidebarCountdown({ routeName }: { routeName: string }) {
   const [date, setDate] = useState<string>();
   useEffect(() => {
     getSettings().then((s) => setDate(s.examDate));
-  }, []);
+  }, [routeName]);
   if (!date) return null;
   return (
     <div className="mx-3 mt-auto hidden rounded-2xl bg-blush p-4 md:block">
       <p className="text-xs text-muted">HSK 2 exam in</p>
       <p className="font-display text-2xl font-semibold">{Math.max(0, daysUntil(date))} days</p>
+    </div>
+  );
+}
+
+function UpdateBanner() {
+  const [available, reload] = useUpdateAvailable();
+  if (!available) return null;
+  return (
+    <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl bg-blush px-4 py-3 text-sm" role="status" data-testid="update-banner">
+      <span className="flex-1">
+        <strong>A new version is ready.</strong> Your progress is kept. Reload when you're not in the middle of an exam.
+      </span>
+      <button type="button" className="btn-primary text-sm" onClick={reload}>
+        Reload now
+      </button>
     </div>
   );
 }
@@ -78,10 +95,11 @@ export default function App() {
             );
           })}
         </ul>
-        <SidebarCountdown />
+        <SidebarCountdown routeName={route.name} />
       </nav>
       <main className="min-w-0 flex-1 px-4 pb-28 pt-6 md:px-10 md:pb-14 md:pt-10 lg:px-14">
         <div className="mx-auto max-w-5xl">
+          <UpdateBanner />
           {route.name === 'home' && <HomeView />}
           {route.name === 'write' && <WriteView />}
           {route.name === 'entry' && <EntryView key={route.word} word={route.word} />}
@@ -89,6 +107,7 @@ export default function App() {
           {route.name === 'mistakes' && <MistakesView />}
           {route.name === 'characters' && <CharactersView key={route.char ?? ''} char={route.char} />}
           {route.name === 'licences' && <LicencesView />}
+          {route.name === 'settings' && <SettingsView />}
         </div>
       </main>
     </div>

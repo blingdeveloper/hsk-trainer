@@ -7,6 +7,8 @@ export interface DictionaryEntry {
   definitions: string[];
   /** HSK 3.0 level from the official syllabus; undefined when the word isn't listed. */
   hskLevel?: number;
+  /** This is the reading the HSK syllabus uses (e.g. 要 yào, not yāo). */
+  hskReading?: boolean;
 }
 
 export interface DictionaryMeta {
@@ -17,27 +19,30 @@ export interface DictionaryMeta {
   hskTags: string;
 }
 
-type Row = [string, string, string, string[], number];
+type Row = [string, string, string, string[], number, number?];
 
 export class Dictionary {
   private byWord = new Map<string, DictionaryEntry[]>();
   private byChar = new Map<string, string[]>();
+  /** Traditional form → simplified form, for words whose forms differ (學 → 学). */
+  private tradToSimp = new Map<string, string>();
 
   constructor(rows: Row[], readonly meta: DictionaryMeta) {
-    for (const [simplified, trad, pinyin, definitions, level] of rows) {
+    for (const [simplified, trad, pinyin, definitions, level, hskReading] of rows) {
       const entry: DictionaryEntry = { simplified, pinyin, definitions };
-      if (trad) entry.traditional = trad;
+      if (trad) {
+        entry.traditional = trad;
+        if (!this.tradToSimp.has(trad)) this.tradToSimp.set(trad, simplified);
+      }
       if (level) entry.hskLevel = level;
+      if (hskReading) entry.hskReading = true;
       const list = this.byWord.get(simplified);
       if (list) list.push(entry);
       else this.byWord.set(simplified, [entry]);
     }
-    // CC-CEDICT lists proper-noun readings (capitalised pinyin, e.g. 大学 "Da4 xue2",
-    // the classic text) alongside common ones; show the common reading first.
-    const isProper = (e: DictionaryEntry) => e.pinyin[0] !== e.pinyin[0].toLowerCase();
-    for (const list of this.byWord.values()) {
-      list.sort((a, b) => Number(isProper(a)) - Number(isProper(b)));
-    }
+    // Reading order: the HSK reading first, then common readings, then proper nouns
+    // (大学 "Dà xué", the classic text), and "variant of …" cross-references last.
+    for (const list of this.byWord.values()) list.sort((a, b) => rank(a) - rank(b));
     for (const word of this.byWord.keys()) {
       const chars = [...word];
       if (chars.length < 2) continue;
@@ -51,6 +56,21 @@ export class Dictionary {
 
   lookup(word: string): DictionaryEntry[] {
     return this.byWord.get(word) ?? [];
+  }
+
+  /**
+   * The simplified form to show for `word`: itself when it is a simplified headword,
+   * its simplified form when it is traditional (學 → 学), otherwise undefined.
+   * Multi-character traditional text is converted character by character as a fallback.
+   */
+  toSimplified(word: string): string | undefined {
+    if (this.byWord.has(word)) return word;
+    const direct = this.tradToSimp.get(word);
+    if (direct) return direct;
+    const chars = [...word];
+    if (chars.length < 2) return undefined;
+    const converted = chars.map((c) => (this.byWord.has(c) ? c : this.tradToSimp.get(c) ?? c)).join('');
+    return this.byWord.has(converted) ? converted : undefined;
   }
 
   has(word: string): boolean {
@@ -73,6 +93,15 @@ export class Dictionary {
       .sort((a, b) => (this.level(a) ?? 99) - (this.level(b) ?? 99) || a.length - b.length || a.localeCompare(b, 'zh'))
       .slice(0, limit);
   }
+}
+
+const isProper = (e: DictionaryEntry) => e.pinyin[0] !== e.pinyin[0].toLowerCase();
+const isVariantOnly = (e: DictionaryEntry) => e.definitions.every((d) => /^(old |archaic |erroneous )?variant of|^see /i.test(d));
+
+function rank(e: DictionaryEntry): number {
+  if (e.hskReading) return 0;
+  if (isVariantOnly(e)) return 3;
+  return isProper(e) ? 2 : 1;
 }
 
 let loading: Promise<Dictionary> | undefined;

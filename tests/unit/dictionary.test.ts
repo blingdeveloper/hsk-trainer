@@ -37,6 +37,25 @@ describe('Dictionary (real CC-CEDICT pack)', () => {
     expect(first.definitions.join(' ')).toMatch(/university/);
   });
 
+  it.each([
+    ['么', 'me'],
+    ['要', 'yào'],
+    ['和', 'hé'],
+    ['为', 'wèi'],
+    ['还', 'hái'],
+    ['行', 'xíng'],
+  ])('shows the HSK reading of %s first (%s)', (char, pinyin) => {
+    expect(dict.lookup(char)[0].pinyin).toBe(pinyin);
+    expect(dict.lookup(char)[0].definitions.join(' ')).not.toMatch(/^old variant/);
+  });
+
+  it('finds traditional forms', () => {
+    expect(dict.toSimplified('學')).toBe('学');
+    expect(dict.toSimplified('電腦')).toBe('电脑');
+    expect(dict.toSimplified('学')).toBe('学');
+    expect(dict.toSimplified('abc')).toBeUndefined();
+  });
+
   it('returns nothing (rather than inventing) for unknown words', () => {
     expect(dict.lookup('学猫')).toEqual([]);
   });

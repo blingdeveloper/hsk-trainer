@@ -8,7 +8,8 @@ export type Route =
   | { name: 'practice'; resume?: boolean }
   | { name: 'mistakes' }
   | { name: 'characters'; char?: string }
-  | { name: 'licences' };
+  | { name: 'licences' }
+  | { name: 'settings' };
 
 export function parseRoute(hash: string): Route {
   const [, name = '', arg = ''] = hash.replace(/^#/, '').split('/');
@@ -25,6 +26,8 @@ export function parseRoute(hash: string): Route {
       return arg ? { name: 'characters', char: decodeURIComponent(arg) } : { name: 'characters' };
     case 'licences':
       return { name: 'licences' };
+    case 'settings':
+      return { name: 'settings' };
     default:
       return { name: 'home' };
   }

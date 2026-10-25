@@ -22,19 +22,27 @@ function pdfPages(first, last) {
 }
 
 /** Vocabulary list rows: "403 2（5） 面1 miàn 后缀、（动、名、量）". */
+/** Returns word → level, and word → syllabus pinyin (all listed readings). */
 function parseVocab(text) {
   const levels = new Map();
+  const pinyin = new Map();
   for (const line of text.split('\n')) {
-    const m = /^\d+ (\d(?:-\d)?)(?:（[\d-]+）)* (\S+?)\d? [a-zA-Zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜü'’·\-/ ]+/.exec(line.trim());
+    const m = /^\d+ (\d(?:-\d)?)(?:（[\d-]+）)* (\S+?)\d? ([a-zA-Zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜü'’·\-/ ]+)/.exec(line.trim());
     if (!m) continue;
     const level = m[1].includes('-') ? 7 : Number(m[1]);
     // Some words are listed with alternatives, e.g. "爸爸|爸". Tag each form.
     for (const word of m[2].split(/[|｜]/)) {
       if (!levels.has(word) || levels.get(word) > level) levels.set(word, level);
+      const list = pinyin.get(word) ?? [];
+      list.push({ pinyin: m[3].trim(), level });
+      pinyin.set(word, list);
     }
   }
-  return levels;
+  return { levels, pinyin };
 }
+
+/** Pinyin compared without spaces, apostrophes, hyphens or case: "xué xiào" ~ "xuéxiào". */
+const normPinyin = (p) => p.toLowerCase().replace(/[\s'’·\-/]/g, '');
 
 /** Character lists: "1. 爱" / "169.四". */
 function parseCharList(text) {
@@ -58,7 +66,7 @@ function splitByHeadings(text, headings) {
   return out;
 }
 
-const vocabLevels = parseVocab(pdfPages(80, 355));
+const { levels: vocabLevels, pinyin: vocabPinyin } = parseVocab(pdfPages(80, 355));
 const readingText = splitByHeadings(pdfPages(356, 376), [
   'HSK（一级）认读字',
   'HSK（二级）认读字',
@@ -91,7 +99,7 @@ const recognisable = new Set(mmah.chars.map((c) => c[0]));
 // "words containing this character" lists stay relevant to your level.
 const studyChars = new Set([...readingChars[1], ...readingChars[2], ...readingChars[3]]);
 
-const entries = [];
+const parsed = [];
 for (const line of cedictText.split('\n')) {
   if (!line || line.startsWith('#')) continue;
   const m = /^(\S+) (\S+) \[([^\]]*)\] \/(.*)\/\s*$/.exec(line);
@@ -101,9 +109,54 @@ for (const line of cedictText.split('\n')) {
   const keep = chars.length === 1 ? recognisable.has(simp) || studyChars.has(simp) : chars.every((c) => studyChars.has(c));
   if (!keep) continue;
   const definitions = defs.split('/').filter(Boolean);
-  // Compact row: [simplified, traditional, tone-marked pinyin, definitions, hskLevel|0]
-  entries.push([simp, trad === simp ? '' : trad, numberedToMarked(pinyin), definitions, vocabLevels.get(simp) ?? 0]);
+  parsed.push({ simp, trad: trad === simp ? '' : trad, pinyin: numberedToMarked(pinyin), definitions });
 }
+
+// ---------- 2b. Which reading is the HSK one? ----------
+// A CC-CEDICT entry is "preferred" when its pinyin matches the syllabus. Characters
+// that only appear inside words (么 in 什么) get the reading those words use, weighted
+// towards lower levels: 么 → me, 为 → wèi.
+const bySimp = new Map();
+for (const e of parsed) {
+  const list = bySimp.get(e.simp);
+  if (list) list.push(e);
+  else bySimp.set(e.simp, [e]);
+}
+// Real entries before "variant of …" cross-references, and common-noun readings before
+// proper nouns ("dà xué" before "Dà xué"), so they win ties.
+const isProper = (e) => e.pinyin[0] !== e.pinyin[0].toLowerCase();
+const isVariantOnly = (e) => e.definitions.every((d) => /^(old |archaic |erroneous )?variant of|^see /i.test(d));
+const tieRank = (e) => (isVariantOnly(e) ? 2 : 0) + (isProper(e) ? 1 : 0);
+for (const list of bySimp.values()) list.sort((a, b) => tieRank(a) - tieRank(b));
+const preferred = new Set();
+const votes = new Map(); // char → Map(lowercase syllable → weight)
+for (const [word, readings] of vocabPinyin) {
+  for (const { pinyin, level } of readings) {
+    if (level > 3) continue;
+    const match = (bySimp.get(word) ?? []).find((e) => normPinyin(e.pinyin) === normPinyin(pinyin));
+    if (!match) continue;
+    preferred.add(match);
+    const syllables = match.pinyin.split(' ');
+    const chars = [...word];
+    if (syllables.length !== chars.length) continue;
+    chars.forEach((c, i) => {
+      const v = votes.get(c) ?? new Map();
+      const syl = syllables[i].toLowerCase();
+      v.set(syl, (v.get(syl) ?? 0) + (4 - level));
+      votes.set(c, v);
+    });
+  }
+}
+for (const [c, v] of votes) {
+  if ((vocabPinyin.get(c) ?? []).some((r) => r.level <= 3)) continue; // listed on its own: syllabus wins
+  const best = [...v].sort((a, b) => b[1] - a[1])[0][0];
+  const match = (bySimp.get(c) ?? []).find((e) => e.pinyin.toLowerCase() === best);
+  if (match) preferred.add(match);
+}
+
+// Compact row: [simplified, traditional, tone-marked pinyin, definitions, hskLevel|0, preferred 1|0]
+const entries = parsed.map((e) => [e.simp, e.trad, e.pinyin, e.definitions, vocabLevels.get(e.simp) ?? 0, preferred.has(e) ? 1 : 0]);
+console.log(`readings: ${preferred.size} entries marked as the HSK reading`);
 
 const taggedWords = new Set(entries.filter((e) => e[4]).map((e) => e[0]));
 const untagged = [...vocabLevels].filter(([w, l]) => l <= 2 && !taggedWords.has(w)).map(([w]) => w);

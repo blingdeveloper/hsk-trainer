@@ -3,14 +3,23 @@ import { href } from '../../lib/router';
 import { db } from '../../db/db';
 import StrokeOrder from '../strokes/StrokeOrder';
 import { useDictionary } from './useDictionary';
+import type { Dictionary } from './dictionary';
 
 function HskTag({ level }: { level?: number }) {
   if (!level) return null;
   return <span className="tag">{level >= 7 ? 'HSK 7–9' : `HSK ${level}`}</span>;
 }
 
-export default function EntryView({ word }: { word: string }) {
+export default function EntryView({ word: requested }: { word: string }) {
   const { dict, error } = useDictionary();
+  if (error) return <p className="text-bad">{error}</p>;
+  if (!dict) return <p className="text-muted">Loading dictionary…</p>;
+  // Traditional input (學, 電腦) shows the simplified entry, with a note.
+  const word = dict.toSimplified(requested) ?? requested;
+  return <Entry key={word} dict={dict} word={word} typedTraditional={word !== requested ? requested : undefined} />;
+}
+
+function Entry({ dict, word, typedTraditional }: { dict: Dictionary; word: string; typedTraditional?: string }) {
   const [saved, setSaved] = useState(false);
   const chars = [...word];
   const isChar = chars.length === 1;
@@ -24,9 +33,6 @@ export default function EntryView({ word }: { word: string }) {
     setSaved(true);
   }
 
-  if (error) return <p className="text-bad">{error}</p>;
-  if (!dict) return <p className="text-muted">Loading dictionary…</p>;
-
   const entries = dict.lookup(word);
   const compounds = isChar ? dict.wordsContaining(word) : [];
 
@@ -35,6 +41,19 @@ export default function EntryView({ word }: { word: string }) {
       <a href={href({ name: 'write' })} className="btn-ghost -ml-3">
         ← Draw another character
       </a>
+
+      {typedTraditional && (
+        <p className="rounded-2xl bg-blush px-4 py-3 text-sm" data-testid="traditional-note">
+          <span className="han text-lg" lang="zh-TW">
+            {typedTraditional}
+          </span>{' '}
+          is the traditional form. HSK uses simplified characters, so this shows{' '}
+          <span className="han text-lg" lang="zh-CN">
+            {word}
+          </span>
+          .
+        </p>
+      )}
 
       <div className="grid items-start gap-4 md:grid-cols-2">
       <section className="card md:p-6">
@@ -82,11 +101,13 @@ export default function EntryView({ word }: { word: string }) {
           <p className="mt-3 text-sm text-muted">This has more than one reading. Which one applies depends on the context.</p>
         )}
 
-        <div className="mt-4 flex gap-2">
-          <button type="button" className="btn-secondary" onClick={save} disabled={saved}>
-            {saved ? '✓ Saved' : 'Save'}
-          </button>
-        </div>
+        {entries.length > 0 && (
+          <div className="mt-4 flex gap-2">
+            <button type="button" className="btn-secondary" onClick={save} disabled={saved}>
+              {saved ? '✓ Saved' : 'Save'}
+            </button>
+          </div>
+        )}
       </section>
 
       {!isChar && (
