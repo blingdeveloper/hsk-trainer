@@ -1,15 +1,21 @@
 import PageHeader from '../../ui/PageHeader';
+import LevelSwitch from '../../ui/LevelSwitch';
 import { href } from '../../lib/router';
 import { useWide, useWindowWidth } from '../../lib/useWide';
 import HandwritingPad from './HandwritingPad';
+import { useLevel } from '../../lib/useSettings';
 
 export default function WriteView() {
   const wide = useWide();
+  const lvl = useLevel();
   const width = useWindowWidth();
   return (
     <div className="space-y-4">
-      <PageHeader han="手写 · shǒuxiě" title="Handwriting lookup">
-        <p className="text-sm text-muted">Draw a character, then tap the right one. Recognition runs on your device and nothing is sent anywhere.</p>
+      <PageHeader han="手写 · shǒuxiě" title="Handwriting lookup" actions={<LevelSwitch />}>
+        <p className="text-sm text-muted">
+          Draw a character, then tap the right one. Recognition runs on your device and nothing is sent anywhere. Words are tagged with their HSK
+          level; ones above {lvl.name} are marked.
+        </p>
       </PageHeader>
       <div className="grid items-start gap-4 md:grid-cols-[auto_1fr]">
         <section className="card flex justify-center md:p-8">

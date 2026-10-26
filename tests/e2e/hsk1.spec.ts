@@ -15,7 +15,7 @@ test('switching to HSK 1 changes the whole app, and is remembered', async ({ pag
   await chooseLevel(page, 1);
 
   await page.goto('./#/');
-  await expect(page.getByText("Here's what to do today for HSK 1.")).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Up next for HSK 1' })).toBeVisible();
   await expect(page.getByTestId('next-paper')).toContainText('15 questions in the official HSK 1 format');
   // No writing in the HSK 1 exam, so practice comes before writing characters.
   await expect(page.getByTestId('next-paper')).toContainText('Step 1');

@@ -6,10 +6,19 @@ import { useDictionary } from './useDictionary';
 import type { Dictionary } from './dictionary';
 import { definitionText, formatDefinition, type Segment } from './format';
 import { wordPinyin } from '../../lib/pinyin';
+import { useLevel } from '../../lib/useSettings';
 
+/** Level tag. Words above the level you're studying are marked, so you know they aren't in your exam. */
 function HskTag({ level }: { level?: number }) {
+  const studying = useLevel();
   if (!level) return null;
-  return <span className="tag">{level >= 7 ? 'HSK 7–9' : `HSK ${level}`}</span>;
+  const name = level >= 7 ? 'HSK 7–9' : `HSK ${level}`;
+  if (level <= studying.id) return <span className="tag">{name}</span>;
+  return (
+    <span className="tag bg-paper text-muted" title={`Not in the ${studying.name} word list`}>
+      {name} · above {studying.name}
+    </span>
+  );
 }
 
 export default function EntryView({ word: requested }: { word: string }) {

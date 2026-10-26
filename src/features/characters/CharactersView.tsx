@@ -1,12 +1,13 @@
 import PageHeader from '../../ui/PageHeader';
 import { useCallback, useEffect, useState } from 'react';
 import { db, recordWritingQuiz, RECALLS_TO_LEARN, type WritingProgress } from '../../db/db';
-import { assetUrl } from '../../lib/assets';
 import { href } from '../../lib/router';
 import { useDictionary } from '../dictionary/useDictionary';
 import WritingQuiz, { type QuizMode } from './WritingQuiz';
 import { useWide, useWindowWidth } from '../../lib/useWide';
 import { useLevel } from '../../lib/useSettings';
+import { loadWritingChars } from '../../content/writingChars';
+import LevelSwitch from '../../ui/LevelSwitch';
 import { ProgressBar, Ring } from '../../ui/Progress';
 
 const SESSION_SIZE = 10;
@@ -24,13 +25,6 @@ const STATUS_STYLE: Record<Status, string> = {
   learned: 'border-good/30 bg-sage',
 };
 
-let charsPromise: Promise<string[]> | undefined;
-function loadWritingChars(): Promise<string[]> {
-  charsPromise ??= fetch(assetUrl('packs/core/hsk.json'))
-    .then((r) => r.json())
-    .then((d: { writingChars: Record<string, string[]> }) => d.writingChars['1-2']);
-  return charsPromise;
-}
 
 /** Next characters to practise: not yet learned, fewest recalls first, then least recently practised. */
 export function pickSession(chars: string[], progress: Map<string, WritingProgress>, size = SESSION_SIZE): string[] {
@@ -54,9 +48,9 @@ export default function CharactersView({ char }: { char?: string }) {
   }, []);
 
   useEffect(() => {
-    loadWritingChars().then(setChars);
+    loadWritingChars(lvl.id).then(setChars);
     void refresh();
-  }, [refresh]);
+  }, [refresh, lvl.id]);
 
   if (session) {
     return <Session queue={session} onExit={() => { setSession(null); void refresh(); }} />;
@@ -70,15 +64,17 @@ export default function CharactersView({ char }: { char?: string }) {
 
   return (
     <div className="space-y-4">
-      <PageHeader han="汉字 · hànzì" title="Writing characters">
+      <PageHeader han="汉字 · hànzì" title={`${lvl.name} characters`} actions={<LevelSwitch />}>
         <p className="text-sm text-muted">
-          The {chars.length || 100} characters the official HSK 1–2 syllabus says you must be able to write (书写字). A character counts as
-          learned after you write it from memory {RECALLS_TO_LEARN} times with at most one mistake.
+          {lvl.id === 2
+            ? `The ${chars.length || 100} characters the official HSK 1–2 syllabus says you must be able to write (书写字).`
+            : `The ${chars.length || 95} characters from the official HSK 1–2 writing list (书写字) that are HSK 1 characters. The other 5 (比 地 过 为 长) are added at HSK 2.`}{' '}
+          A character counts as learned after you write it from memory {RECALLS_TO_LEARN} times with at most one mistake. Progress is shared between
+          levels.
         </p>
         {!lvl.official.writing && (
           <p className="mt-2 text-sm" data-testid="hsk1-writing-note">
-            The {lvl.name} exam has no writing section. This list is shared with HSK 2 (the syllabus doesn't split it), and writing characters
-            still helps you recognise them when reading.
+            The {lvl.name} exam has no writing section, but writing characters helps you recognise them when reading.
           </p>
         )}
       </PageHeader>

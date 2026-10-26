@@ -11,6 +11,10 @@ export interface SectionSpec {
 export interface LevelConfig {
   id: LevelId;
   name: string;
+  /** Chinese name of the level, e.g. 一级. */
+  han: string;
+  /** One-line description for the level cards on Home. */
+  tagline: string;
   /** Official sections from the CTI sample paper (listening isn't available in the app yet). */
   official: { listening: SectionSpec; reading: SectionSpec; writing?: SectionSpec; totalMinutes: number; totalQuestions: number };
   /** Short description of the official paper for the Practice screen. */
@@ -33,6 +37,8 @@ export const LEVELS: Record<LevelId, LevelConfig> = {
   1: {
     id: 1,
     name: 'HSK 1',
+    han: '一级',
+    tagline: '300 words · 40-minute exam · listening and reading',
     official: { listening: { questions: 20, minutes: 12 }, reading: { questions: 20, minutes: 20 }, totalMinutes: 40, totalQuestions: 40 },
     formatSummary: 'Listening 20 questions (~12 min), Reading 20 (20 min). No writing section. About 40 minutes in total.',
     notIncluded: 'Listening (20 questions, ~12 min, then 3 min to fill in the answer sheet) and Reading Part 1 (5 picture questions)',
@@ -48,6 +54,8 @@ export const LEVELS: Record<LevelId, LevelConfig> = {
   2: {
     id: 2,
     name: 'HSK 2',
+    han: '二级',
+    tagline: '500 words · 60-minute exam · listening, reading and writing',
     official: {
       listening: { questions: 25, minutes: 17 },
       reading: { questions: 25, minutes: 25 },

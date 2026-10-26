@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { db, RECALLS_TO_LEARN } from '../../db/db';
 import type { LevelId } from '../../content/types';
+import { LEVEL_IDS, LEVELS, type LevelConfig } from '../../content/levels';
+import { loadWritingChars } from '../../content/writingChars';
 import { useLevel, useSettings } from '../../lib/useSettings';
 import { href, type Route } from '../../lib/router';
 import { ProgressBar } from '../../ui/Progress';
@@ -8,12 +10,12 @@ import { summariseMistakes } from '../exam/mistakes';
 import { attemptLevel, findPaper, mockPapers, setPapers } from '../exam/papers';
 import { useOfflineState } from '../../lib/updates';
 
-const WRITING_TOTAL = 100;
-
 interface Overview {
   resumeTitle?: string;
   openMistakes: number;
   learned: number;
+  /** Writing characters for this level (95 for HSK 1, 100 for HSK 2). */
+  writingTotal: number;
   practising: number;
   answered: number;
   /** Accuracy over the most recent 50 answers, 0–1. */
@@ -22,7 +24,14 @@ interface Overview {
 }
 
 async function loadOverview(levelId: LevelId): Promise<Overview> {
-  const [exam, allAttempts, writing] = await Promise.all([db.exam.get('current'), db.attempts.toArray(), db.writing.toArray()]);
+  const [exam, allAttempts, allWriting, levelChars] = await Promise.all([
+    db.exam.get('current'),
+    db.attempts.toArray(),
+    db.writing.toArray(),
+    loadWritingChars(levelId),
+  ]);
+  const inLevel = new Set(levelChars);
+  const writing = allWriting.filter((w) => inLevel.has(w.char));
   // Each level has its own practice history; the writing characters are shared (HSK 1–2 list).
   const attempts = allAttempts.filter((a) => attemptLevel(a.questionId) === levelId);
   const recent = [...attempts].sort((a, b) => b.timestamp - a.timestamp).slice(0, 50);
@@ -34,6 +43,7 @@ async function loadOverview(levelId: LevelId): Promise<Overview> {
     resumeTitle: examPaper ? (examPaper.level === levelId ? examPaper.title : `${examPaper.title} (HSK ${examPaper.level})`) : undefined,
     openMistakes: summariseMistakes(attempts).filter((m) => m.open).length,
     learned: writing.filter((w) => w.recalls >= RECALLS_TO_LEARN).length,
+    writingTotal: levelChars.length,
     practising: writing.filter((w) => w.attempts > 0 && w.recalls < RECALLS_TO_LEARN).length,
     answered: attempts.length,
     recentAccuracy: recent.length ? recent.filter((a) => a.correct).length / recent.length : undefined,
@@ -75,13 +85,13 @@ function upNext(o: Overview, levelName: string, hasWriting: boolean): Step[] {
       testId: 'next-mistakes',
     });
   }
-  if (o.learned < WRITING_TOTAL) {
+  if (o.learned < o.writingTotal) {
     steps.push({
       han: '写字',
       title: 'Write 10 characters',
       detail: hasWriting
-        ? `${o.learned} of ${WRITING_TOTAL} exam characters learned so far.`
-        : `${o.learned} of ${WRITING_TOTAL} learned. ${levelName} has no writing section, but writing them helps you remember them.`,
+        ? `${o.learned} of ${o.writingTotal} exam characters learned so far.`
+        : `${o.learned} of ${o.writingTotal} learned. ${levelName} has no writing section, but writing them helps you remember them.`,
       route: { name: 'characters' },
       testId: 'next-characters',
     });
@@ -132,7 +142,7 @@ export default function HomeView() {
             · {g.pinyin}
           </p>
           <h1 className="font-display mt-2 text-4xl font-semibold md:text-5xl">{g.en}.</h1>
-          <p className="mt-2 text-muted">Here's what to do today for {lvl.name}.</p>
+          <p className="mt-2 text-muted">Choose your level, or carry on with what's up next for {lvl.name}.</p>
         </div>
         {days !== undefined && (
           <div className="card flex items-center gap-4 !py-4" data-testid="countdown">
@@ -148,9 +158,20 @@ export default function HomeView() {
         )}
       </header>
 
+      <section aria-labelledby="levels">
+        <h2 id="levels" className="font-display text-xl font-semibold">
+          Your level
+        </h2>
+        <div className="mt-3 grid gap-4 md:grid-cols-2">
+          {LEVEL_IDS.map((id) => (
+            <LevelCard key={id} level={LEVELS[id]} current={id === lvl.id} />
+          ))}
+        </div>
+      </section>
+
       <section aria-labelledby="up-next">
         <h2 id="up-next" className="font-display text-xl font-semibold">
-          Up next
+          Up next for {lvl.name}
         </h2>
         <ol className={`mt-3 grid gap-3 ${['', 'md:grid-cols-1', 'md:grid-cols-2', 'md:grid-cols-3'][steps.length]}`}>
           {steps.map((s, i) => (
@@ -176,12 +197,12 @@ export default function HomeView() {
           Your progress
         </h2>
         <div className="card space-y-3">
-          <p className="text-sm text-muted">{lvl.official.writing ? 'Exam characters learned' : 'HSK 1–2 writing characters learned'}</p>
+          <p className="text-sm text-muted">{lvl.name} characters learned</p>
           <p className="font-display text-3xl font-semibold" data-testid="stat-learned">
             {o.learned}
-            <span className="text-lg text-muted"> / {WRITING_TOTAL}</span>
+            <span className="text-lg text-muted"> / {o.writingTotal}</span>
           </p>
-          <ProgressBar value={o.learned} max={WRITING_TOTAL} label="Characters learned" tone="good" />
+          <ProgressBar value={o.learned} max={o.writingTotal} label="Characters learned" tone="good" />
           <p className="text-xs text-muted">{o.practising} in progress</p>
         </div>
         <div className="card space-y-3">
@@ -197,19 +218,97 @@ export default function HomeView() {
         </a>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-2">
-        <a href={href({ name: 'write' })} className="card-link flex items-center gap-4">
-          <span className="han flex h-12 w-12 items-center justify-center rounded-2xl bg-sage text-xl" lang="zh-CN">
-            查
-          </span>
-          <span>
-            <span className="block font-medium">Don't know a character?</span>
-            <span className="text-sm text-muted">Draw it to look it up, offline.</span>
-          </span>
-        </a>
-        <OfflineStatus />
-      </section>
+      <OfflineStatus />
     </div>
+  );
+}
+
+interface LevelSummary {
+  sets: number;
+  mocks: number;
+  answered: number;
+  learned: number;
+  writingTotal: number;
+}
+
+async function loadLevelSummary(levelId: LevelId): Promise<LevelSummary> {
+  const [attempts, writing, chars] = await Promise.all([db.attempts.toArray(), db.writing.toArray(), loadWritingChars(levelId)]);
+  const inLevel = new Set(chars);
+  return {
+    sets: setPapers(levelId).length,
+    mocks: mockPapers(levelId).length,
+    answered: attempts.filter((a) => attemptLevel(a.questionId) === levelId).length,
+    learned: writing.filter((w) => inLevel.has(w.char) && w.recalls >= RECALLS_TO_LEARN).length,
+    writingTotal: chars.length,
+  };
+}
+
+const LEVEL_ACTIONS: { label: string; han: string; route: Route; hint: string }[] = [
+  { label: 'Practice', han: '练', route: { name: 'practice' }, hint: 'Practice sets and mock exams' },
+  { label: 'Characters', han: '字', route: { name: 'characters' }, hint: 'Learn to write the characters' },
+  { label: 'Lookup', han: '查', route: { name: 'write' }, hint: 'Draw a character to look it up' },
+];
+
+/** One level on Home: what it is, your progress, and its three sections. Choosing a section switches level. */
+function LevelCard({ level, current }: { level: LevelConfig; current: boolean }) {
+  const [, update] = useSettings();
+  const [summary, setSummary] = useState<LevelSummary>();
+  useEffect(() => {
+    void loadLevelSummary(level.id).then(setSummary);
+  }, [level.id]);
+
+  function open(route: Route) {
+    update({ targetLevel: level.id });
+    location.hash = href(route);
+  }
+
+  return (
+    <article
+      className={`card flex flex-col gap-4 transition ${current ? 'border-rose/50 ring-2 ring-rose/20' : ''}`}
+      aria-label={`${level.name}${current ? ' (your level)' : ''}`}
+      data-testid={`level-card-${level.id}`}
+    >
+      <header className="flex items-start gap-4">
+        <span
+          className={`han flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-xl ${current ? 'bg-rose text-on-rose' : 'bg-blush text-rose'}`}
+          lang="zh-CN"
+          aria-hidden
+        >
+          {level.han}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-display text-2xl font-semibold">{level.name}</h3>
+            {current && <span className="tag">Your level</span>}
+          </div>
+          <p className="text-sm text-muted">{level.tagline}</p>
+        </div>
+      </header>
+
+      <p className="text-sm text-muted" data-testid={`level-summary-${level.id}`}>
+        {summary
+          ? `${summary.sets} practice sets · ${summary.mocks} mock exams · ${summary.learned}/${summary.writingTotal} characters learned${summary.answered ? ` · ${summary.answered} answers so far` : ''}`
+          : '…'}
+      </p>
+
+      <div className="grid grid-cols-3 gap-2">
+        {LEVEL_ACTIONS.map((a) => (
+          <button
+            key={a.label}
+            type="button"
+            onClick={() => open(a.route)}
+            aria-label={`${level.name} ${a.label}: ${a.hint}`}
+            title={a.hint}
+            className="group flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border border-line bg-paper px-2 py-3 text-sm font-medium transition hover:-translate-y-0.5 hover:border-rose/40 hover:bg-blush"
+          >
+            <span className="han text-xl text-rose" lang="zh-CN" aria-hidden>
+              {a.han}
+            </span>
+            {a.label}
+          </button>
+        ))}
+      </div>
+    </article>
   );
 }
 
