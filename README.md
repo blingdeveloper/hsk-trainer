@@ -47,7 +47,7 @@ Offline mode only works in the **production build** (`npm run build && npm run p
 | `src/content/sets/` | **Original** practice sets A–C, labelled as such |
 | `src/content/types.ts` | Question types and official HSK 2 timing |
 | `src/features/characters/` | Writing trainer for the 100 HSK 1–2 writing characters |
-| `.github/workflows/deploy.yml` | Builds, tests and publishes to GitHub Pages on push to `main` |
+| `.github/workflows/deploy.yml` | Builds, tests and publishes to GitHub Pages (manual for now) |
 | `src/db/db.ts` | IndexedDB storage (attempts, saved items, settings, exam in progress) |
 | `src/db/backup.ts` | Backup export, checks and restore |
 | `src/features/settings/` | Settings screen (exam date, pinyin, backup, storage) |
@@ -56,9 +56,11 @@ Offline mode only works in the **production build** (`npm run build && npm run p
 
 ## Deploying to GitHub Pages
 
-1. Create a **public** GitHub repository (for example `hsk-trainer`) and push this folder to its `main` branch.
+The code lives in the private repository `MicaiahWiafe/hsk-trainer`. Free GitHub Pages needs a **public** repository, so publishing is switched off for now. To publish later:
+
+1. Make the repository public (check the licence note for the HSK syllabus data first: see Sources & Licences in the app).
 2. On GitHub, open the repository's **Settings → Pages** and set **Source** to **GitHub Actions**.
-3. Every push to `main` then runs the tests and publishes to `https://<your-username>.github.io/<repo>/`.
+3. In `.github/workflows/deploy.yml`, add the `push: branches: [main]` trigger back. Every push to `main` then runs the tests and publishes to `https://micaiahwiafe.github.io/hsk-trainer/`.
 4. On Android: open that link in Chrome, wait for "✓ Ready offline", then use **⋮ → Add to Home screen**.
 
 ## Your data

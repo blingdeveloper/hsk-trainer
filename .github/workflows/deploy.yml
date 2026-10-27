@@ -1,11 +1,13 @@
-# Builds the app, runs the unit tests and publishes it to GitHub Pages
-# on every push to main. The data packs in public/ are committed, so the
-# build doesn't need to download anything.
+# Builds the app, runs the unit tests and publishes it to GitHub Pages.
+# The data packs in public/ are committed, so the build doesn't need to
+# download anything.
 name: Deploy to GitHub Pages
 
+# Manual only for now: the repository is private, and free GitHub Pages needs a
+# public repository. To publish automatically on every push, add back:
+#   push:
+#     branches: [main]
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
