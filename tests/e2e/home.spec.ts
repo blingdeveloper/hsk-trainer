@@ -1,3 +1,4 @@
+import { wrong } from './helpers';
 import { expect, test } from '@playwright/test';
 
 test('Today shows the countdown and next steps that follow your progress', async ({ page }) => {
@@ -11,7 +12,7 @@ test('Today shows the countdown and next steps that follow your progress', async
   await page.getByTestId('next-paper').click();
   await page.getByRole('button', { name: /^Guided/ }).click();
   const q = page.getByTestId('q-a-r2-1');
-  await q.getByRole('radio', { name: /^A:/ }).click();
+  await q.getByRole('radio', { name: new RegExp(`^${wrong('a-r2-1')}:`) }).click();
   await q.getByRole('button', { name: 'Check' }).click();
   await page.getByRole('button', { name: 'Save and leave' }).click();
 

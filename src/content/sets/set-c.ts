@@ -4,28 +4,28 @@ import { inGroup, standardGroups, type PracticeSet } from '../types';
 
 const groups = standardGroups('c', {
   r2: [
-    { key: 'A', text: '能', pinyin: 'néng' },
-    { key: 'B', text: '每', pinyin: 'měi' },
-    { key: 'C', text: '但是', pinyin: 'dànshì' },
-    { key: 'D', text: '怎么', pinyin: 'zěnme' },
-    { key: 'E', text: '准备', pinyin: 'zhǔnbèi' },
-    { key: 'F', text: '让', pinyin: 'ràng' },
+    { key: 'A', text: '但是', pinyin: 'dànshì' },
+    { key: 'B', text: '准备', pinyin: 'zhǔnbèi' },
+    { key: 'C', text: '能', pinyin: 'néng' },
+    { key: 'D', text: '让', pinyin: 'ràng' },
+    { key: 'E', text: '每', pinyin: 'měi' },
+    { key: 'F', text: '怎么', pinyin: 'zěnme' },
   ],
   r3: [
-    { key: 'A', text: '是的，她是我妹妹。', pinyin: 'Shì de, tā shì wǒ mèimei.' },
+    { key: 'A', text: '我在家看书呢。', pinyin: 'Wǒ zài jiā kàn shū ne.' },
     { key: 'B', text: '我想喝茶。', pinyin: 'Wǒ xiǎng hē chá.' },
-    { key: 'C', text: '没问题，我们一起去。', pinyin: 'Méi wèntí, wǒmen yìqǐ qù.' },
-    { key: 'D', text: '我在家看书呢。', pinyin: 'Wǒ zài jiā kàn shū ne.' },
-    { key: 'E', text: '下个月十号。', pinyin: 'Xià gè yuè shí hào.' },
-    { key: 'F', text: '三本，都很好看。', pinyin: 'Sān běn, dōu hěn hǎokàn.' },
+    { key: 'C', text: '是的，她是我妹妹。', pinyin: 'Shì de, tā shì wǒ mèimei.' },
+    { key: 'D', text: '三本，都很好看。', pinyin: 'Sān běn, dōu hěn hǎokàn.' },
+    { key: 'E', text: '没问题，我们一起去。', pinyin: 'Méi wèntí, wǒmen yìqǐ qù.' },
+    { key: 'F', text: '下个月十号。', pinyin: 'Xià gè yuè shí hào.' },
   ],
   w1: [
-    { key: 'A', text: '氵' },
-    { key: 'B', text: '口' },
-    { key: 'C', text: '亻' },
-    { key: 'D', text: '女' },
-    { key: 'E', text: '木' },
-    { key: 'F', text: '讠' },
+    { key: 'A', text: '女' },
+    { key: 'B', text: '亻' },
+    { key: 'C', text: '讠' },
+    { key: 'D', text: '氵' },
+    { key: 'E', text: '口' },
+    { key: 'F', text: '木' },
   ],
 });
 const [r2, r3, r4, w1, w2] = groups;
@@ -33,32 +33,32 @@ const [r2, r3, r4, w1, w2] = groups;
 const questions = [
   ...inGroup(r2, [
     {
-      id: 'c-r2-1', prompt: '我（ ）天早上都喝一杯牛奶。', pinyin: 'Wǒ ( ) tiān zǎoshang dōu hē yì bēi niúnǎi.', correctAnswer: 'B',
+      id: 'c-r2-1', prompt: '我（ ）天早上都喝一杯牛奶。', pinyin: 'Wǒ ( ) tiān zǎoshang dōu hē yì bēi niúnǎi.', correctAnswer: 'E',
       explanation: '每天…都… means "every day…": 每 before the time word, 都 before the verb.',
     },
     {
-      id: 'c-r2-2', prompt: '这个字不好写，（ ）我会写。', pinyin: 'Zhège zì bù hǎo xiě, ( ) wǒ huì xiě.', correctAnswer: 'C',
+      id: 'c-r2-2', prompt: '这个字不好写，（ ）我会写。', pinyin: 'Zhège zì bù hǎo xiě, ( ) wǒ huì xiě.', correctAnswer: 'A',
       explanation: '但是 (but) introduces a contrast: "This character isn\'t easy to write, but I can write it."',
     },
     {
-      id: 'c-r2-3', prompt: '你（ ）帮我开一下门吗？', pinyin: 'Nǐ ( ) bāng wǒ kāi yíxià mén ma?', correctAnswer: 'A',
+      id: 'c-r2-3', prompt: '你（ ）帮我开一下门吗？', pinyin: 'Nǐ ( ) bāng wǒ kāi yíxià mén ma?', correctAnswer: 'C',
       explanation: '你能…吗？ is a polite request: "Can you open the door for me?"',
     },
     {
-      id: 'c-r2-4', prompt: '去火车站（ ）走？', pinyin: 'Qù huǒchēzhàn ( ) zǒu?', correctAnswer: 'D',
+      id: 'c-r2-4', prompt: '去火车站（ ）走？', pinyin: 'Qù huǒchēzhàn ( ) zǒu?', correctAnswer: 'F',
       explanation: '怎么走 asks for directions: "How do I get to the train station?"',
     },
     {
-      id: 'c-r2-5', prompt: '妈妈（ ）我早点儿睡觉。', pinyin: 'Māma ( ) wǒ zǎo diǎnr shuìjiào.', correctAnswer: 'F',
+      id: 'c-r2-5', prompt: '妈妈（ ）我早点儿睡觉。', pinyin: 'Māma ( ) wǒ zǎo diǎnr shuìjiào.', correctAnswer: 'D',
       explanation: 'A 让 B + verb means "A tells or lets B do something": "Mum tells me to go to bed earlier."',
     },
   ]),
   ...inGroup(r3, [
     { id: 'c-r3-1', prompt: '你想喝点儿什么？', pinyin: 'Nǐ xiǎng hē diǎnr shénme?', correctAnswer: 'B', explanation: '"What would you like to drink?" The reply: "I\'d like tea."' },
-    { id: 'c-r3-2', prompt: '你的生日是几月几号？', pinyin: 'Nǐ de shēngrì shì jǐ yuè jǐ hào?', correctAnswer: 'E', explanation: '几月几号 asks for a date. The reply gives one: the 10th of next month.' },
-    { id: 'c-r3-3', prompt: '那个女孩儿是你的家人吗？', pinyin: 'Nàge nǚháir shì nǐ de jiārén ma?', correctAnswer: 'A', explanation: 'A yes/no question about family. The reply: "Yes, she\'s my younger sister."' },
-    { id: 'c-r3-4', prompt: '你现在在做什么？', pinyin: 'Nǐ xiànzài zài zuò shénme?', correctAnswer: 'D', explanation: '在做什么 asks what you are doing right now. In the reply, 在家 means "at home", and 呢 at the end shows the action is going on now.' },
-    { id: 'c-r3-5', prompt: '明天你能和我去医院吗？', pinyin: 'Míngtiān nǐ néng hé wǒ qù yīyuàn ma?', correctAnswer: 'C', explanation: 'A request to go together. 没问题 (no problem) agrees to it.' },
+    { id: 'c-r3-2', prompt: '你的生日是几月几号？', pinyin: 'Nǐ de shēngrì shì jǐ yuè jǐ hào?', correctAnswer: 'F', explanation: '几月几号 asks for a date. The reply gives one: the 10th of next month.' },
+    { id: 'c-r3-3', prompt: '那个女孩儿是你的家人吗？', pinyin: 'Nàge nǚháir shì nǐ de jiārén ma?', correctAnswer: 'C', explanation: 'A yes/no question about family. The reply: "Yes, she\'s my younger sister."' },
+    { id: 'c-r3-4', prompt: '你现在在做什么？', pinyin: 'Nǐ xiànzài zài zuò shénme?', correctAnswer: 'A', explanation: '在做什么 asks what you are doing right now. In the reply, 在家 means "at home", and 呢 at the end shows the action is going on now.' },
+    { id: 'c-r3-5', prompt: '明天你能和我去医院吗？', pinyin: 'Míngtiān nǐ néng hé wǒ qù yīyuàn ma?', correctAnswer: 'E', explanation: 'A request to go together. 没问题 (no problem) agrees to it.' },
   ]),
   ...inGroup(r4, [
     {
@@ -123,11 +123,11 @@ const questions = [
     },
   ]),
   ...inGroup(w1, [
-    { id: 'c-w1-1', prompt: '没有', component: { word: '没有', pinyin: 'méiyǒu', index: 0, shown: '殳' }, correctAnswer: 'A', explanation: '没 = 氵 (water) + 殳. The water radical has three dots.' },
-    { id: 'c-w1-2', prompt: '他们', component: { word: '他们', pinyin: 'tāmen', index: 0, shown: '也' }, correctAnswer: 'C', explanation: '他 (he) = 亻 (person) + 也. Compare 她 (she) = 女 + 也.' },
-    { id: 'c-w1-3', prompt: '叫车', component: { word: '叫车', pinyin: 'jiào chē', index: 0, shown: '丩' }, correctAnswer: 'B', explanation: '叫 (to call) has the mouth radical 口, because you use your mouth to call.' },
-    { id: 'c-w1-4', prompt: '好的', component: { word: '好的', pinyin: 'hǎo de', index: 0, shown: '子' }, correctAnswer: 'D', explanation: '好 = 女 (woman) + 子 (child).' },
-    { id: 'c-w1-5', prompt: '谢谢', component: { word: '谢谢', pinyin: 'xièxie', index: 0, shown: '射' }, correctAnswer: 'F', explanation: '谢 (to thank) = 讠 (speech) + 射. You thank someone with words.' },
+    { id: 'c-w1-1', prompt: '没有', component: { word: '没有', pinyin: 'méiyǒu', index: 0, shown: '殳' }, correctAnswer: 'D', explanation: '没 = 氵 (water) + 殳. The water radical has three dots.' },
+    { id: 'c-w1-2', prompt: '他们', component: { word: '他们', pinyin: 'tāmen', index: 0, shown: '也' }, correctAnswer: 'B', explanation: '他 (he) = 亻 (person) + 也. Compare 她 (she) = 女 + 也.' },
+    { id: 'c-w1-3', prompt: '叫车', component: { word: '叫车', pinyin: 'jiào chē', index: 0, shown: '丩' }, correctAnswer: 'E', explanation: '叫 (to call) has the mouth radical 口, because you use your mouth to call.' },
+    { id: 'c-w1-4', prompt: '好的', component: { word: '好的', pinyin: 'hǎo de', index: 0, shown: '子' }, correctAnswer: 'A', explanation: '好 = 女 (woman) + 子 (child).' },
+    { id: 'c-w1-5', prompt: '谢谢', component: { word: '谢谢', pinyin: 'xièxie', index: 0, shown: '射' }, correctAnswer: 'C', explanation: '谢 (to thank) = 讠 (speech) + 射. You thank someone with words.' },
   ]),
   ...inGroup(w2, [
     { id: 'c-w2-1', prompt: '我有（ ）个哥哥。', pinyin: 'Wǒ yǒu (liǎng) gè gēge.', correctAnswer: '两', explanation: 'Before a measure word, "two" is 两 (liǎng), not 二: 两个哥哥.' },

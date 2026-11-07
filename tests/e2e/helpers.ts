@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { groupById, questionById } from '../../src/features/exam/papers';
 
 /** Draws strokes given in 0–1 coordinates on the handwriting canvas. */
 export async function drawStrokes(page: Page, strokes: [number, number][][]) {
@@ -28,4 +29,17 @@ export async function waitForOfflineReady(page: Page) {
   await expect(page.getByTestId('offline-status')).toContainText('Ready offline', { timeout: 30_000 });
   await page.reload();
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+}
+
+
+/** The correct letter for a question, read from the content (so re-lettering options never breaks tests). */
+export function right(questionId: string): string {
+  return questionById(questionId)!.correctAnswer;
+}
+
+/** A wrong letter for a question. */
+export function wrong(questionId: string): string {
+  const q = questionById(questionId)!;
+  const keys = (q.options ?? groupById(q.groupId)!.options!).map((o) => o.key);
+  return keys.find((k) => k !== q.correctAnswer)!;
 }

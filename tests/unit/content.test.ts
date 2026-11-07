@@ -60,6 +60,16 @@ describe.each(SETS.map((s) => ({ ...s, name: `${LEVELS[s.level].name} ${s.title}
     }
   });
 
+  it("shared-option answers aren't in order, so you can't answer without reading", () => {
+    for (const g of set.groups.filter((g) => g.options)) {
+      const keys = set.questions.filter((q) => q.groupId === g.id).map((q) => q.correctAnswer.charCodeAt(0));
+      // Neighbouring questions never have neighbouring letters (A→B, D→C…), so no part reads in sequence.
+      for (let i = 1; i < keys.length; i++) {
+        expect(Math.abs(keys[i] - keys[i - 1]), `${g.id}: ${String.fromCharCode(...keys)}`).not.toBe(1);
+      }
+    }
+  });
+
   it('Writing Part 1 shows a real word with the missing character in it', () => {
     for (const q of set.questions.filter((q) => q.component)) {
       const { word, index } = q.component!;

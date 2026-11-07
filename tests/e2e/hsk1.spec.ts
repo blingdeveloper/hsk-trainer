@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { mockPapers } from '../../src/features/exam/papers';
-import { waitForOfflineReady } from './helpers';
+import { right, waitForOfflineReady, wrong } from './helpers';
 
 async function chooseLevel(page: Page, level: 1 | 2) {
   await page.goto('./#/settings');
@@ -64,9 +64,9 @@ test('each level keeps its own history and mistakes', async ({ page }) => {
   await chooseLevel(page, 1);
   await page.goto('./#/practice');
   await page.getByRole('button', { name: /^Guided/ }).click();
-  await pick(page, 'h1-a-p2-1', 'B');
+  await pick(page, 'h1-a-p2-1', wrong('h1-a-p2-1'));
   await page.getByTestId('q-h1-a-p2-1').getByRole('button', { name: 'Check' }).click();
-  await expect(page.getByTestId('q-h1-a-p2-1').getByTestId('feedback')).toContainText('Answer: A');
+  await expect(page.getByTestId('q-h1-a-p2-1').getByTestId('feedback')).toContainText(`Answer: ${right('h1-a-p2-1')}`);
   await page.getByRole('button', { name: 'Save and leave' }).click();
   await expect(page.getByTestId('open-mistakes')).toHaveText('1 to fix');
   await expect(page.getByTestId('history')).toContainText('Practice set A');
@@ -94,14 +94,14 @@ test('redoing HSK 1 mistakes works and fixes them', async ({ page }) => {
   await page.goto('./#/practice');
   await page.getByRole('radio', { name: 'Practice set B' }).click();
   await page.getByRole('button', { name: /^Guided/ }).click();
-  await pick(page, 'h1-b-p3-4', 'A');
+  await pick(page, 'h1-b-p3-4', wrong('h1-b-p3-4'));
   await page.getByTestId('q-h1-b-p3-4').getByRole('button', { name: 'Check' }).click();
   await page.getByRole('button', { name: 'Save and leave' }).click();
   await page.getByRole('button', { name: 'Discard' }).click();
 
   await page.goto('./#/mistakes');
   await page.getByTestId('redo-mistakes').click();
-  await pick(page, 'h1-b-p3-4', 'F');
+  await pick(page, 'h1-b-p3-4', right('h1-b-p3-4'));
   await page.getByTestId('q-h1-b-p3-4').getByRole('button', { name: 'Check' }).click();
   await page.getByTestId('submit-section').click();
   await expect(page.getByTestId('score')).toContainText('1 / 1');
@@ -117,7 +117,7 @@ test('HSK 1 practice works offline', async ({ page, context }) => {
   await page.reload();
   await expect(page.getByRole('heading', { name: 'HSK 1 exam practice' })).toBeVisible();
   await page.getByRole('button', { name: /^Timed/ }).click();
-  await pick(page, 'h1-a-p2-1', 'A');
+  await pick(page, 'h1-a-p2-1', right('h1-a-p2-1'));
   await page.getByTestId('submit-section').click();
   await page.getByTestId('confirm-submit').click();
   await expect(page.getByTestId('score')).toContainText('1 / 15');

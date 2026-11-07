@@ -1,3 +1,4 @@
+import { right, wrong } from './helpers';
 import { expect, test } from '@playwright/test';
 
 test('wrong answers land in the notebook; redoing them correctly fixes them', async ({ page }) => {
@@ -7,7 +8,7 @@ test('wrong answers land in the notebook; redoing them correctly fixes them', as
   // Get two questions wrong in guided mode.
   await page.goto('./#/practice');
   await page.getByRole('button', { name: /^Guided/ }).click();
-  for (const [qid, key] of [['a-r2-1', 'A'], ['a-r3-1', 'C']]) {
+  for (const [qid, key] of [['a-r2-1', wrong('a-r2-1')], ['a-r3-1', wrong('a-r3-1')]]) {
     const q = page.getByTestId(`q-${qid}`);
     await q.getByRole('radio', { name: new RegExp(`^${key}:`) }).click();
     await q.getByRole('button', { name: 'Check' }).click();
@@ -17,7 +18,7 @@ test('wrong answers land in the notebook; redoing them correctly fixes them', as
 
   await page.goto('./#/mistakes');
   await expect(page.getByTestId('mistake-list').getByRole('listitem')).toHaveCount(2);
-  await expect(page.getByTestId('mistake-a-r2-1')).toContainText('Your answer: A');
+  await expect(page.getByTestId('mistake-a-r2-1')).toContainText(`Your answer: ${wrong('a-r2-1')}`);
   await expect(page.getByTestId('mistake-a-r2-1')).toContainText('Vocabulary & grammar in context');
 
   // Filter by category.
@@ -29,7 +30,7 @@ test('wrong answers land in the notebook; redoing them correctly fixes them', as
   await page.getByTestId('redo-mistakes').click();
   await expect(page.getByText('My mistakes · 0/2 answered')).toBeVisible();
   const q = page.getByTestId('q-a-r2-1');
-  await q.getByRole('radio', { name: /^C:/ }).click();
+  await q.getByRole('radio', { name: new RegExp(`^${right('a-r2-1')}:`) }).click();
   await q.getByRole('button', { name: 'Check' }).click();
   await page.getByTestId('submit-section').click();
   await page.getByTestId('confirm-submit').click();

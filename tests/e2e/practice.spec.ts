@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { waitForOfflineReady } from './helpers';
+import { right, waitForOfflineReady, wrong } from './helpers';
 
 async function startSet(page: Page, set: 'A' | 'B' | 'C', mode: 'Guided' | 'Timed') {
   await page.goto('./#/practice');
@@ -13,16 +13,16 @@ test('guided mode: check shows explanation and locks the answer', async ({ page 
   await startSet(page, 'A', 'Guided');
   await expect(page.getByText('Original practice').first()).toBeVisible();
   const q = page.getByTestId('q-a-r2-1');
-  await pick(page, 'a-r2-1', 'C');
+  await pick(page, 'a-r2-1', right('a-r2-1'));
   await q.getByRole('button', { name: 'Check' }).click();
   await expect(q.getByTestId('feedback')).toContainText('Correct');
   await expect(q.getByRole('button', { name: 'Check' })).toHaveCount(0);
-  await expect(q.getByRole('radio', { name: /^A:/ })).toBeDisabled();
+  await expect(q.getByRole('radio', { name: new RegExp(`^${wrong('a-r2-1')}:`) })).toBeDisabled();
 
-  const wrong = page.getByTestId('q-a-r2-2');
-  await pick(page, 'a-r2-2', 'F');
-  await wrong.getByRole('button', { name: 'Check' }).click();
-  await expect(wrong.getByTestId('feedback')).toContainText('Answer: A');
+  const second = page.getByTestId('q-a-r2-2');
+  await pick(page, 'a-r2-2', wrong('a-r2-2'));
+  await second.getByRole('button', { name: 'Check' }).click();
+  await expect(second.getByTestId('feedback')).toContainText(`Answer: ${right('a-r2-2')}`);
 });
 
 test('timed exam: confirm unanswered, score, review and history, offline', async ({ page, context }) => {
@@ -31,8 +31,8 @@ test('timed exam: confirm unanswered, score, review and history, offline', async
   await startSet(page, 'A', 'Timed');
   await expect(page.getByRole('timer')).toHaveText(/1[45]:\d\d/);
 
-  await pick(page, 'a-r2-1', 'C');
-  await pick(page, 'a-r3-1', 'B');
+  await pick(page, 'a-r2-1', right('a-r2-1'));
+  await pick(page, 'a-r3-1', right('a-r3-1'));
   await expect(page.getByTestId('feedback')).toHaveCount(0);
 
   // Finishing with unanswered questions asks first.
@@ -123,7 +123,7 @@ test('can switch practice sets; each set has its own questions', async ({ page }
   await startSet(page, 'C', 'Guided');
   await expect(page.getByText('Practice set C ·')).toBeVisible();
   const q = page.getByTestId('q-c-r2-1');
-  await pick(page, 'c-r2-1', 'B');
+  await pick(page, 'c-r2-1', right('c-r2-1'));
   await q.getByRole('button', { name: 'Check' }).click();
   await expect(q.getByTestId('feedback')).toContainText('Correct');
 });

@@ -7,9 +7,11 @@ import { formatClock, isCorrect, scaledMinutes, scoreSections } from '../../src/
 describe('scoring', () => {
   it('marks answers correctly, ignoring case and whitespace', () => {
     const q = QUESTIONS.find((q) => q.id === 'a-r2-1')!;
-    expect(isCorrect(q, 'C')).toBe(true);
-    expect(isCorrect(q, ' c ')).toBe(true);
-    expect(isCorrect(q, 'A')).toBe(false);
+    const right = q.correctAnswer;
+    const wrong = right === 'A' ? 'B' : 'A';
+    expect(isCorrect(q, right)).toBe(true);
+    expect(isCorrect(q, ` ${right.toLowerCase()} `)).toBe(true);
+    expect(isCorrect(q, wrong)).toBe(false);
     expect(isCorrect(q, undefined)).toBe(false);
   });
 

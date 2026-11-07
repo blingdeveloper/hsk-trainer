@@ -10,12 +10,12 @@ const groups: QuestionGroup[] = [
     officialPart: 'Reading Part 2',
     instructions: 'Choose the word that fills the gap. One word is not used.',
     options: [
-      { key: 'A', text: '离', pinyin: 'lí' },
-      { key: 'B', text: '一起', pinyin: 'yìqǐ' },
-      { key: 'C', text: '已经', pinyin: 'yǐjīng' },
-      { key: 'D', text: '因为', pinyin: 'yīnwèi' },
-      { key: 'E', text: '还是', pinyin: 'háishi' },
-      { key: 'F', text: '快', pinyin: 'kuài' },
+      { key: 'A', text: '还是', pinyin: 'háishi' },
+      { key: 'B', text: '离', pinyin: 'lí' },
+      { key: 'C', text: '一起', pinyin: 'yìqǐ' },
+      { key: 'D', text: '快', pinyin: 'kuài' },
+      { key: 'E', text: '已经', pinyin: 'yǐjīng' },
+      { key: 'F', text: '因为', pinyin: 'yīnwèi' },
     ],
   },
   {
@@ -25,12 +25,12 @@ const groups: QuestionGroup[] = [
     officialPart: 'Reading Part 3',
     instructions: 'Choose the best reply to each sentence. One reply is not used.',
     options: [
-      { key: 'A', text: '坐地铁去，很快。', pinyin: 'Zuò dìtiě qù, hěn kuài.' },
-      { key: 'B', text: '不贵，五十块钱。', pinyin: 'Bú guì, wǔshí kuài qián.' },
-      { key: 'C', text: '就是"学习"的"学"。', pinyin: 'Jiù shì "xuéxí" de "xué".' },
+      { key: 'A', text: '他生病了，在医院。', pinyin: 'Tā shēngbìng le, zài yīyuàn.' },
+      { key: 'B', text: '就是"学习"的"学"。', pinyin: 'Jiù shì "xuéxí" de "xué".' },
+      { key: 'C', text: '不贵，五十块钱。', pinyin: 'Bú guì, wǔshí kuài qián.' },
       { key: 'D', text: '好啊，几点见？', pinyin: 'Hǎo a, jǐ diǎn jiàn?' },
-      { key: 'E', text: '他生病了，在医院。', pinyin: 'Tā shēngbìng le, zài yīyuàn.' },
-      { key: 'F', text: '今天天气很好。', pinyin: 'Jīntiān tiānqì hěn hǎo.' },
+      { key: 'E', text: '今天天气很好。', pinyin: 'Jīntiān tiānqì hěn hǎo.' },
+      { key: 'F', text: '坐地铁去，很快。', pinyin: 'Zuò dìtiě qù, hěn kuài.' },
     ],
   },
   {
@@ -48,11 +48,11 @@ const groups: QuestionGroup[] = [
     instructions: 'Each word has one character with a part missing. Choose the missing part. One part is not used.',
     options: [
       { key: 'A', text: '口' },
-      { key: 'B', text: '女' },
-      { key: 'C', text: '日' },
-      { key: 'D', text: '木' },
+      { key: 'B', text: '木' },
+      { key: 'C', text: '讠' },
+      { key: 'D', text: '女' },
       { key: 'E', text: '氵' },
-      { key: 'F', text: '讠' },
+      { key: 'F', text: '日' },
     ],
   },
   {
@@ -71,35 +71,35 @@ const questions: Question[] = [
     ...ORIGINAL, id: 'a-r2-1', groupId: 'a-r2', skill: 'reading', taskType: 'reading-2-word-bank',
     prompt: '我（ ）吃过午饭了。',
     pinyin: 'Wǒ ( ) chīguo wǔfàn le.',
-    correctAnswer: 'C',
+    correctAnswer: 'E',
     explanation: '已经 (already) goes before the verb, and 了 at the end shows the action is finished: "I have already eaten lunch."',
   },
   {
     ...ORIGINAL, id: 'a-r2-2', groupId: 'a-r2', skill: 'reading', taskType: 'reading-2-word-bank',
     prompt: '我家（ ）学校很近，走路五分钟就到。',
     pinyin: 'Wǒ jiā ( ) xuéxiào hěn jìn, zǒulù wǔ fēnzhōng jiù dào.',
-    correctAnswer: 'A',
+    correctAnswer: 'B',
     explanation: 'A 离 B 很近/很远 means "A is close to / far from B". Here: "My home is close to the school."',
   },
   {
     ...ORIGINAL, id: 'a-r2-3', groupId: 'a-r2', skill: 'reading', taskType: 'reading-2-word-bank',
     prompt: '（ ）今天下雨，所以我们不出去玩了。',
     pinyin: '( ) jīntiān xià yǔ, suǒyǐ wǒmen bù chūqù wán le.',
-    correctAnswer: 'D',
+    correctAnswer: 'F',
     explanation: '因为…所以… is the "because… so…" pattern. 所以 in the second half signals 因为 in the first.',
   },
   {
     ...ORIGINAL, id: 'a-r2-4', groupId: 'a-r2', skill: 'reading', taskType: 'reading-2-word-bank',
     prompt: '你今天去，（ ）明天去？',
     pinyin: 'Nǐ jīntiān qù, ( ) míngtiān qù?',
-    correctAnswer: 'E',
+    correctAnswer: 'A',
     explanation: '还是 (or) joins two choices in a question: "Are you going today or tomorrow?"',
   },
   {
     ...ORIGINAL, id: 'a-r2-5', groupId: 'a-r2', skill: 'reading', taskType: 'reading-2-word-bank',
     prompt: '我想跟你（ ）去看电影。',
     pinyin: 'Wǒ xiǎng gēn nǐ ( ) qù kàn diànyǐng.',
-    correctAnswer: 'B',
+    correctAnswer: 'C',
     explanation: '跟…一起 + verb means "do something together with…": "I want to go and see a film with you." 一起 goes before the verb.',
   },
 
@@ -107,19 +107,19 @@ const questions: Question[] = [
   {
     ...ORIGINAL, id: 'a-r3-1', groupId: 'a-r3', skill: 'reading', taskType: 'reading-3-response-match',
     prompt: '这件衣服多少钱？', pinyin: 'Zhè jiàn yīfu duōshao qián?',
-    correctAnswer: 'B',
+    correctAnswer: 'C',
     explanation: '多少钱 asks a price. The answer gives one: 五十块钱 (50 kuai).',
   },
   {
     ...ORIGINAL, id: 'a-r3-2', groupId: 'a-r3', skill: 'reading', taskType: 'reading-3-response-match',
     prompt: '你明天怎么去机场？', pinyin: 'Nǐ míngtiān zěnme qù jīchǎng?',
-    correctAnswer: 'A',
+    correctAnswer: 'F',
     explanation: '怎么去 asks "how do you get there". The answer gives a way to travel: 坐地铁 (by subway).',
   },
   {
     ...ORIGINAL, id: 'a-r3-3', groupId: 'a-r3', skill: 'reading', taskType: 'reading-3-response-match',
     prompt: '王明今天怎么没来上课？', pinyin: 'Wáng Míng jīntiān zěnme méi lái shàngkè?',
-    correctAnswer: 'E',
+    correctAnswer: 'A',
     explanation: 'Here 怎么没… asks "why didn\'t…". The answer gives a reason: he is ill and in hospital.',
   },
   {
@@ -131,7 +131,7 @@ const questions: Question[] = [
   {
     ...ORIGINAL, id: 'a-r3-5', groupId: 'a-r3', skill: 'reading', taskType: 'reading-3-response-match',
     prompt: '这个字怎么读？', pinyin: 'Zhège zì zěnme dú?',
-    correctAnswer: 'C',
+    correctAnswer: 'B',
     explanation: '"How do you read this character?" A common way to answer is to name a word that uses it: "It\'s the 学 in 学习", so it\'s read xué.',
   },
 
@@ -206,7 +206,7 @@ const questions: Question[] = [
   {
     ...ORIGINAL, id: 'a-w1-1', groupId: 'a-w1', skill: 'writing', taskType: 'writing-1-component',
     prompt: '妈妈', component: { word: '妈妈', pinyin: 'māma', index: 0, shown: '马' },
-    correctAnswer: 'B',
+    correctAnswer: 'D',
     explanation: '妈 = 女 (woman) + 马 (mǎ, gives the sound). Many family words for women use 女: 妈, 姐, 妹, 奶.',
   },
   {
@@ -218,13 +218,13 @@ const questions: Question[] = [
   {
     ...ORIGINAL, id: 'a-w1-3', groupId: 'a-w1', skill: 'writing', taskType: 'writing-1-component',
     prompt: '时间', component: { word: '时间', pinyin: 'shíjiān', index: 0, shown: '寸' },
-    correctAnswer: 'C',
+    correctAnswer: 'F',
     explanation: '时 (time) = 日 (sun/day) + 寸. Time words often contain 日: 时, 明, 晚, 昨.',
   },
   {
     ...ORIGINAL, id: 'a-w1-4', groupId: 'a-w1', skill: 'writing', taskType: 'writing-1-component',
     prompt: '说话', component: { word: '说话', pinyin: 'shuōhuà', index: 0, shown: '兑' },
-    correctAnswer: 'F',
+    correctAnswer: 'C',
     explanation: '说 (speak) has the speech radical 讠, like 话, 语, 请 and 谁.',
   },
   {
