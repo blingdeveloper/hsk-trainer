@@ -4,11 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fdf7f5" />
+    <meta
+      name="description"
+      content="Free HSK 1 and HSK 2 practice in the new HSK 3.0 format: timed mock exams, reading and writing practice, a mistake notebook, a character-writing trainer and an offline handwriting dictionary. Works on phone and computer, even without internet."
+    />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <title>HSK Trainer</title>
+    <style>
+      /* Shown only until the app has loaded; the app then replaces it. */
+      .intro { max-width: 40rem; margin: 3rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; color: #2a2226; line-height: 1.5; }
+      @media (prefers-color-scheme: dark) { .intro { color: #f2ebe8; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="intro">
+        <h1>HSK Trainer</h1>
+        <p>
+          Free practice for the HSK 1 and HSK 2 Chinese exams in the new HSK 3.0 format. Practise reading and writing questions, sit
+          timed mock exams, learn to write the characters the exam asks for, and look up any character by drawing it.
+        </p>
+        <p>Loading…</p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

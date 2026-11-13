@@ -219,6 +219,25 @@ export default function HomeView() {
       </section>
 
       <OfflineStatus />
+
+      <section aria-labelledby="about" className="space-y-2 border-t border-line pt-6 text-sm text-muted" data-testid="about">
+        <h2 id="about" className="font-display text-lg font-semibold text-ink">
+          About HSK Trainer
+        </h2>
+        <p>
+          HSK Trainer is a free study app for the HSK 1 and HSK 2 Chinese proficiency exams, in the new HSK 3.0 format. Practise reading
+          and writing questions with explanations, sit timed mock exams that follow the official paper, and redo your mistakes until you get
+          them right.
+        </p>
+        <p>
+          Learn to write the characters the exam asks for with stroke-order animations, and look up any character by drawing it. The
+          dictionary shows pinyin, meanings and HSK levels. Everything works on your phone or computer, even offline, and your progress
+          stays on your device.
+        </p>
+        <p className="text-xs">
+          Practice questions are original and follow the format of the official HSK sample papers; they are not official HSK questions.
+        </p>
+      </section>
     </div>
   );
 }
