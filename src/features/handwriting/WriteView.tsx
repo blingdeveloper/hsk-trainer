@@ -4,6 +4,7 @@ import { href } from '../../lib/router';
 import { useWide, useWindowWidth } from '../../lib/useWide';
 import HandwritingPad from './HandwritingPad';
 import { useLevel } from '../../lib/useSettings';
+import SearchPanel from '../dictionary/SearchPanel';
 
 export default function WriteView() {
   const wide = useWide();
@@ -11,12 +12,14 @@ export default function WriteView() {
   const width = useWindowWidth();
   return (
     <div className="space-y-4">
-      <PageHeader han="手写 · shǒuxiě" title="Handwriting lookup" actions={<LevelSwitch />}>
+      <PageHeader han="查字 · cházì" title="Lookup" actions={<LevelSwitch />}>
         <p className="text-sm text-muted">
-          Draw a character, then tap the right one. Recognition runs on your device and nothing is sent anywhere. Words are tagged with their HSK
+          Type pinyin or English, or draw a character and tap the right one. Recognition runs on your device and nothing is sent anywhere. Words are tagged with their HSK
           level; ones above {lvl.name} are marked.
         </p>
       </PageHeader>
+      <SearchPanel />
+      <h2 className="font-display text-lg font-semibold">Or draw it</h2>
       <div className="grid items-start gap-4 md:grid-cols-[auto_1fr]">
         <section className="card flex justify-center md:p-8">
           <HandwritingPad size={wide ? 380 : Math.min(300, width - 72)} onPick={(c) => (location.hash = href({ name: 'entry', word: c }))} />

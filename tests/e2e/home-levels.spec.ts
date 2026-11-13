@@ -37,7 +37,7 @@ test('choosing a section on a level card switches to that level', async ({ page 
 
   await page.goto('./');
   await page.getByRole('button', { name: /^HSK 1 Lookup/ }).click();
-  await expect(page.getByRole('heading', { name: 'Handwriting lookup' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Lookup', exact: true })).toBeVisible();
   await expect(page.getByTestId('level-1')).toHaveAttribute('aria-checked', 'true');
 });
 

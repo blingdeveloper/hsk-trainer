@@ -73,6 +73,11 @@ export class Dictionary {
     return this.byWord.has(converted) ? converted : undefined;
   }
 
+  /** Every headword in the pack, in pack order. */
+  words(): IterableIterator<string> {
+    return this.byWord.keys();
+  }
+
   has(word: string): boolean {
     return this.byWord.has(word);
   }
@@ -95,10 +100,10 @@ export class Dictionary {
   }
 }
 
-const isProper = (e: DictionaryEntry) => e.pinyin[0] !== e.pinyin[0].toLowerCase();
-const isVariantOnly = (e: DictionaryEntry) => e.definitions.every((d) => /^(old |archaic |erroneous )?variant of|^see /i.test(d));
+export const isProper = (e: DictionaryEntry) => e.pinyin[0] !== e.pinyin[0].toLowerCase();
+export const isVariantOnly = (e: DictionaryEntry) => e.definitions.every((d) => /^(old |archaic |erroneous )?variant of|^see /i.test(d));
 
-function rank(e: DictionaryEntry): number {
+export function rank(e: DictionaryEntry): number {
   if (e.hskReading) return 0;
   if (isVariantOnly(e)) return 3;
   return isProper(e) ? 2 : 1;
