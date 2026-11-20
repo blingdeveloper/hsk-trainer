@@ -14,7 +14,7 @@ export default defineConfig({
     VitePWA({
       // 'prompt': a new version waits until the person chooses to reload (never mid-exam).
       registerType: 'prompt',
-      includeAssets: ['icon.svg'],
+      includeAssets: ['icon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'],
       workbox: {
         // Everything needed offline is precached on first visit (~6 MB).
         globPatterns: ['**/*.{js,css,html,svg,json,txt,woff2}'],
@@ -23,13 +23,22 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
       manifest: {
-        name: 'HSK Sentence & Exam Trainer',
+        name: 'HSK Trainer',
         short_name: 'HSK Trainer',
-        description: 'Offline HSK 3.0 practice, handwriting lookup and dictionary.',
+        description: 'Free HSK 1 and HSK 2 practice in the HSK 3.0 format: mock exams, writing practice and an offline dictionary.',
+        id: './',
+        start_url: './',
+        scope: './',
         theme_color: '#fdf7f5',
         background_color: '#fdf7f5',
         display: 'standalone',
-        icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
+        // PNGs (made by scripts/make-icons.mjs) are what Android and install prompts use; the SVG is for desktop browsers.
+        icons: [
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+        ],
       },
     }),
   ],

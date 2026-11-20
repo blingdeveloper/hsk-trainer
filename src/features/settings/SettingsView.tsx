@@ -5,6 +5,7 @@ import { useSettings } from '../../lib/useSettings';
 import PageHeader from '../../ui/PageHeader';
 import Switch from '../../ui/Switch';
 import LevelSwitch from '../../ui/LevelSwitch';
+import InstallCard from '../../ui/InstallCard';
 import { clearPendingSettings, loadSettings } from '../../lib/useSettings';
 import { level } from '../../content/levels';
 import { daysUntil } from '../home/HomeView';
@@ -70,6 +71,7 @@ export default function SettingsView() {
         </div>
       </section>
 
+      <InstallCard />
       <BackupSection />
       <StorageSection />
 

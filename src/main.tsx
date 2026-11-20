@@ -5,6 +5,8 @@ import '@fontsource-variable/inter';
 import '@fontsource-variable/fraunces';
 import './index.css';
 import './lib/updates';
+// Listen for the browser's install offer from the start: it can arrive before the first render.
+import './lib/install';
 import { loadSettings } from './lib/useSettings';
 
 // Settings decide the level shown everywhere, so load them before the first render.

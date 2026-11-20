@@ -9,6 +9,7 @@ import { ProgressBar } from '../../ui/Progress';
 import { summariseMistakes } from '../exam/mistakes';
 import { attemptLevel, findPaper, mockPapers, setPapers } from '../exam/papers';
 import { useOfflineState } from '../../lib/updates';
+import InstallCard from '../../ui/InstallCard';
 
 interface Overview {
   resumeTitle?: string;
@@ -219,6 +220,7 @@ export default function HomeView() {
       </section>
 
       <OfflineStatus />
+      <InstallCard dismissible />
 
       <section aria-labelledby="about" className="space-y-2 border-t border-line pt-6 text-sm text-muted" data-testid="about">
         <h2 id="about" className="font-display text-lg font-semibold text-ink">
