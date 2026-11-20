@@ -10,6 +10,7 @@ import HomeView, { daysUntil } from './features/home/HomeView';
 import SettingsView from './features/settings/SettingsView';
 import { useUpdateAvailable } from './lib/updates';
 import { useLevel, useSettings } from './lib/useSettings';
+import ErrorBoundary from './ui/ErrorBoundary';
 
 const NAV: { route: Route; label: string; han: string; also?: Route['name'][] }[] = [
   { route: { name: 'home' }, label: 'Today', han: '今' },
@@ -99,14 +100,18 @@ export default function App() {
       <main className="min-w-0 flex-1 px-4 pb-28 pt-6 md:px-10 md:pb-14 md:pt-10 lg:px-14">
         <div className="mx-auto max-w-5xl">
           <UpdateBanner />
-          {route.name === 'home' && <HomeView />}
-          {route.name === 'write' && <WriteView />}
-          {route.name === 'entry' && <EntryView key={route.word} word={route.word} />}
-          {route.name === 'practice' && <ExamView autoResume={route.resume} />}
-          {route.name === 'mistakes' && <MistakesView />}
-          {route.name === 'characters' && <CharactersView key={route.char ?? ''} char={route.char} />}
-          {route.name === 'licences' && <LicencesView />}
-          {route.name === 'settings' && <SettingsView />}
+          {/* A new key per page: moving to another page clears an error shown on the last one.
+              Practice counts as one page, so "Resume" (#/practice/resume → #/practice) keeps the paper. */}
+          <ErrorBoundary key={route.name === 'practice' ? 'practice' : href(route)}>
+            {route.name === 'home' && <HomeView />}
+            {route.name === 'write' && <WriteView />}
+            {route.name === 'entry' && <EntryView key={route.word} word={route.word} />}
+            {route.name === 'practice' && <ExamView autoResume={route.resume} />}
+            {route.name === 'mistakes' && <MistakesView />}
+            {route.name === 'characters' && <CharactersView key={route.char ?? ''} char={route.char} />}
+            {route.name === 'licences' && <LicencesView />}
+            {route.name === 'settings' && <SettingsView />}
+          </ErrorBoundary>
         </div>
       </main>
     </div>

@@ -11,19 +11,28 @@ export type Route =
   | { name: 'licences' }
   | { name: 'settings' };
 
+/** Decodes a link part. A badly encoded one ("%E0%A4%A") is used as typed instead of crashing the app. */
+function decode(part: string): string {
+  try {
+    return decodeURIComponent(part);
+  } catch {
+    return part;
+  }
+}
+
 export function parseRoute(hash: string): Route {
   const [, name = '', arg = ''] = hash.replace(/^#/, '').split('/');
   switch (name) {
     case 'write':
       return { name: 'write' };
     case 'entry':
-      return arg ? { name: 'entry', word: decodeURIComponent(arg) } : { name: 'write' };
+      return arg ? { name: 'entry', word: decode(arg) } : { name: 'write' };
     case 'practice':
       return arg === 'resume' ? { name: 'practice', resume: true } : { name: 'practice' };
     case 'mistakes':
       return { name: 'mistakes' };
     case 'characters':
-      return arg ? { name: 'characters', char: decodeURIComponent(arg) } : { name: 'characters' };
+      return arg ? { name: 'characters', char: decode(arg) } : { name: 'characters' };
     case 'licences':
       return { name: 'licences' };
     case 'settings':

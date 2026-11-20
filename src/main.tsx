@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import ErrorBoundary from './ui/ErrorBoundary';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/fraunces';
 import './index.css';
@@ -15,7 +16,10 @@ void loadSettings()
   .finally(() =>
     createRoot(document.getElementById('root')!).render(
       <StrictMode>
-        <App />
+        {/* Last line of defence for errors outside a page (navigation, banners). */}
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </StrictMode>,
     ),
   );

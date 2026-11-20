@@ -5,8 +5,10 @@ import { cssVar, useColorScheme } from '../../lib/theme';
 
 /** Loads bundled stroke data for Hanzi Writer. Works offline once cached. */
 export function loadStrokeData(c: string): Promise<CharacterJson> {
+  // Stroke files exist only for single Chinese characters; anything else (a broken link's text) has none.
+  if (!/^\p{Script=Han}$/u.test(c)) return Promise.reject(new Error(`No stroke data for ${c}`));
   // Some servers answer a missing file with the app page instead of a 404, so check it is JSON.
-  return fetch(assetUrl(`packs/strokes/${c}.json`)).then((r) =>
+  return fetch(assetUrl(`packs/strokes/${encodeURIComponent(c)}.json`)).then((r) =>
     r.ok && (r.headers.get('content-type') ?? '').includes('json') ? r.json() : Promise.reject(new Error(`No stroke data for ${c}`)),
   );
 }

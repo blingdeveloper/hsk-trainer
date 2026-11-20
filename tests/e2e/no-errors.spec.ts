@@ -16,6 +16,8 @@ const ROUTES = [
   '#/settings',
   '#/licences',
   '#/no-such-page',
+  '#/entry/%E0%A4%A', // badly encoded link: used to blank the whole app
+  '#/characters/%E0%A4%A',
 ];
 
 test('every screen loads without console errors or uncaught exceptions', async ({ page }) => {
@@ -26,6 +28,7 @@ test('every screen loads without console errors or uncaught exceptions', async (
   for (const route of ROUTES) {
     await page.goto(`./${route}`);
     await expect(page.locator('main')).not.toBeEmpty();
+    await expect(page.getByTestId('error-screen'), route).toHaveCount(0);
     await page.waitForTimeout(400);
   }
   // The same screens with HSK 1 selected.

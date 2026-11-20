@@ -2,12 +2,23 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { readFileSync } from 'node:fs';
+
+// The security headers live in vercel.json (what the live site sends). The local preview, which the
+// browser tests run against, sends the same ones, so a too-strict policy fails the tests, not the site.
+const vercel = JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8')) as {
+  headers: { source: string; headers: { key: string; value: string }[] }[];
+};
+const securityHeaders = Object.fromEntries(
+  vercel.headers.find((h) => h.source === '/(.*)')!.headers.map((h) => [h.key, h.value]),
+);
 
 // BASE is set to "/<repo-name>/" when deploying to GitHub Pages.
 const base = process.env.BASE ?? '/';
 
 export default defineConfig({
   base,
+  preview: { headers: securityHeaders },
   plugins: [
     react(),
     tailwindcss(),
