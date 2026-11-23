@@ -5,6 +5,7 @@ import { useWide, useWindowWidth } from '../../lib/useWide';
 import HandwritingPad from './HandwritingPad';
 import { useLevel } from '../../lib/useSettings';
 import SearchPanel from '../dictionary/SearchPanel';
+import SavedPanel from '../dictionary/SavedPanel';
 
 export default function WriteView() {
   const wide = useWide();
@@ -37,6 +38,7 @@ export default function WriteView() {
           </p>
         </section>
       </div>
+      <SavedPanel />
     </div>
   );
 }

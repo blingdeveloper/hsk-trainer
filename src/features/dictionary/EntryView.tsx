@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { hasInAppHistory, href } from '../../lib/router';
-import { db } from '../../db/db';
+import { isSaved, saveWord, unsaveWord } from '../../db/saved';
 import StrokeOrder from '../strokes/StrokeOrder';
 import { useDictionary } from './useDictionary';
 import type { Dictionary } from './dictionary';
@@ -23,12 +23,17 @@ function Entry({ dict, word, typedTraditional }: { dict: Dictionary; word: strin
   const isChar = chars.length === 1;
 
   useEffect(() => {
-    db.saved.where({ itemType: isChar ? 'character' : 'word', itemRef: word }).count().then((n) => setSaved(n > 0));
-  }, [word, isChar]);
+    isSaved(word).then(setSaved);
+  }, [word]);
 
   async function save() {
-    await db.saved.put({ itemType: isChar ? 'character' : 'word', itemRef: word, createdAt: Date.now() });
+    await saveWord(word);
     setSaved(true);
+  }
+
+  async function unsave() {
+    await unsaveWord(word);
+    setSaved(false);
   }
 
   const entries = dict.lookup(word);
@@ -102,10 +107,21 @@ function Entry({ dict, word, typedTraditional }: { dict: Dictionary; word: strin
         )}
 
         {entries.length > 0 && (
-          <div className="mt-4 flex gap-2">
-            <button type="button" className="btn-secondary" onClick={save} disabled={saved}>
-              {saved ? '✓ Saved' : 'Save'}
-            </button>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {saved ? (
+              <>
+                <span className="text-sm font-medium text-good" data-testid="saved-status">
+                  ✓ Saved to your list on Lookup
+                </span>
+                <button type="button" className="btn-ghost" onClick={unsave}>
+                  Remove from saved
+                </button>
+              </>
+            ) : (
+              <button type="button" className="btn-secondary" onClick={save}>
+                Save
+              </button>
+            )}
           </div>
         )}
       </section>
