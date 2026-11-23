@@ -5,6 +5,7 @@ export type LevelId = 1 | 2;
 
 export type Skill = 'reading' | 'writing';
 export type TaskType =
+  | 'reading-1-picture-match'
   | 'reading-2-word-bank'
   | 'reading-3-response-match'
   | 'reading-4-short-passage'
@@ -15,6 +16,8 @@ export interface Option {
   key: string;
   text: string;
   pinyin?: string;
+  /** Reading Part 1: a picture from the media register (src/content/media.ts) instead of text. */
+  image?: string;
 }
 
 export interface QuestionGroup {
@@ -81,6 +84,21 @@ export function standardGroups(setId: string, options: { r2: Option[]; r3: Optio
     { id: `${setId}-w1`, skill: 'writing', taskType: 'writing-1-component', officialPart: 'Writing Part 1', instructions: 'Each word has one character with a part missing. Choose the missing part. One part is not used.', options: options.w1 },
     { id: `${setId}-w2`, skill: 'writing', taskType: 'writing-2-character', officialPart: 'Writing Part 2', instructions: 'Write the character for the pinyin in brackets. Type it or draw it on the pad.' },
   ];
+}
+
+/**
+ * Reading Part 1 (HSK 2, questions 26–30 of the official paper): match each sentence to one
+ * of six pictures A–F. One picture is not used.
+ */
+export function pictureGroup(setId: string, pictures: Option[]): QuestionGroup {
+  return {
+    id: `${setId}-r1`,
+    skill: 'reading',
+    taskType: 'reading-1-picture-match',
+    officialPart: 'Reading Part 1',
+    instructions: 'Choose the picture that matches each sentence. One picture is not used.',
+    options: pictures,
+  };
 }
 
 /**

@@ -246,6 +246,7 @@ export default function HomeView() {
 
 interface LevelSummary {
   sets: number;
+  pictureSets: number;
   mocks: number;
   answered: number;
   learned: number;
@@ -256,7 +257,8 @@ async function loadLevelSummary(levelId: LevelId): Promise<LevelSummary> {
   const [attempts, writing, chars] = await Promise.all([db.attempts.toArray(), db.writing.toArray(), loadWritingChars(levelId)]);
   const inLevel = new Set(chars);
   return {
-    sets: setPapers(levelId).length,
+    sets: LEVELS[levelId].sets.length,
+    pictureSets: LEVELS[levelId].pictureSets.length,
     mocks: mockPapers(levelId).length,
     answered: attempts.filter((a) => attemptLevel(a.questionId) === levelId).length,
     learned: writing.filter((w) => inLevel.has(w.char) && w.recalls >= RECALLS_TO_LEARN).length,
@@ -308,7 +310,7 @@ function LevelCard({ level, current }: { level: LevelConfig; current: boolean })
 
       <p className="text-sm text-muted" data-testid={`level-summary-${level.id}`}>
         {summary
-          ? `${summary.sets} practice sets · ${summary.mocks} mock exams · ${summary.learned}/${summary.writingTotal} characters learned${summary.answered ? ` · ${summary.answered} answers so far` : ''}`
+          ? `${summary.sets} practice sets · ${summary.pictureSets ? `${summary.pictureSets} picture set${summary.pictureSets === 1 ? '' : 's'} · ` : ''}${summary.mocks} mock exams · ${summary.learned}/${summary.writingTotal} characters learned${summary.answered ? ` · ${summary.answered} answers so far` : ''}`
           : '…'}
       </p>
 

@@ -44,7 +44,7 @@ Offline mode only works in the **production build** (`npm run build && npm run p
 | `src/features/dictionary/` | Dictionary loader, index and entry page |
 | `src/features/strokes/` | Stroke-order animation (Hanzi Writer) |
 | `src/features/exam/` | Practice/exam engine and scoring |
-| `src/content/sets/` | **Original** practice sets A–C, labelled as such |
+| `src/content/sets/` | **Original** HSK 2 practice sets A–C and Reading Part 1 picture sets, labelled as such (HSK 1 sets are in `src/content/hsk1/`) |
 | `src/content/types.ts` | Question types and official HSK 2 timing |
 | `src/features/characters/` | Writing trainer for the 100 HSK 1–2 writing characters |
 | `.github/workflows/deploy.yml` | Builds, tests and publishes to GitHub Pages (manual for now) |
@@ -52,7 +52,9 @@ Offline mode only works in the **production build** (`npm run build && npm run p
 | `src/db/backup.ts` | Backup export, checks and restore |
 | `src/features/settings/` | Settings screen (exam date, pinyin, backup, storage) |
 | `scripts/build-data/` | Download and build scripts for the data packs |
-| `docs/` | Phase 0 proposal and milestone reports |
+| `docs/content-and-sources.md` | **The record:** everything in the app, where it came from, its licence, and how the Chinese is checked against HSK standards |
+| `src/content/media.ts` | Register of every photo (and later recording): credit, licence, checksum |
+| `docs/` | Phase 0 proposal, milestone reports, research notes |
 
 ## Deploying to GitHub Pages
 

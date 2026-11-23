@@ -12,7 +12,7 @@ test('Home offers HSK 1 and HSK 2, each with Practice, Characters and Lookup', a
   // HSK 2 is the default level.
   await expect(page.getByTestId('level-card-2')).toContainText('Your level');
   await expect(page.getByTestId('level-summary-1')).toContainText('3 practice sets · 3 mock exams · 0/95 characters learned');
-  await expect(page.getByTestId('level-summary-2')).toContainText('3 practice sets · 3 mock exams · 0/100 characters learned');
+  await expect(page.getByTestId('level-summary-2')).toContainText('3 practice sets · 1 picture set · 3 mock exams · 0/100 characters learned');
 });
 
 test('choosing a section on a level card switches to that level', async ({ page }) => {

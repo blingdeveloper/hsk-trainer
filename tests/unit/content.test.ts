@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { LEVELS } from '../../src/content/levels';
 
-const SETS = [...LEVELS[1].sets, ...LEVELS[2].sets];
+const SETS = [1, 2].flatMap((l) => [...LEVELS[l as 1 | 2].sets, ...LEVELS[l as 1 | 2].pictureSets]);
+const isPictureSet = (s: (typeof SETS)[number]) => s.groups.every((g) => g.taskType === 'reading-1-picture-match');
 
 const hsk = JSON.parse(readFileSync('public/packs/core/hsk.json', 'utf8'));
 const writingChars = new Set<string>(hsk.writingChars['1-2']);
@@ -28,6 +29,14 @@ describe.each(SETS.map((s) => ({ ...s, name: `${LEVELS[s.level].name} ${s.title}
   const groupOf = (id: string) => set.groups.find((g) => g.id === id)!;
 
   it('follows the official paper shape: Reading Parts 2–4 (15), plus Writing (10) where the level has it, 5 per part', () => {
+    if (isPictureSet(set)) {
+      // Reading Part 1: 5 sentences and 6 pictures, as in the official HSK 2 paper (questions 26–30).
+      expect(set.questions).toHaveLength(5);
+      expect(set.groups[0].options).toHaveLength(6);
+      expect(set.groups[0].options!.every((o) => o.image && o.text === '')).toBe(true);
+      expect(set.level).toBe(2);
+      return;
+    }
     expect(set.questions.filter((q) => q.skill === 'reading')).toHaveLength(15);
     expect(set.questions.filter((q) => q.skill === 'writing')).toHaveLength(LEVELS[set.level].official.writing ? 10 : 0);
     expect(set.questions.every((q) => q.level === set.level)).toBe(true);

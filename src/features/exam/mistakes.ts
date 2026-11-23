@@ -3,6 +3,7 @@ import type { StudyAttempt } from '../../db/db';
 
 /** Error categories from the brief (§2.5), mapped from the task type. */
 export const CATEGORY: Record<TaskType, string> = {
+  'reading-1-picture-match': 'Sentences and pictures',
   'reading-2-word-bank': 'Vocabulary & grammar in context',
   'reading-3-response-match': 'Dialogue responses',
   'reading-4-short-passage': 'Reading comprehension',

@@ -3,11 +3,20 @@ import { findPaper, MOCK_PAPERS, paperFromMistakes, SET_PAPERS } from '../../src
 
 describe('practice set papers', () => {
   it('keep 15 reading + 10 writing and scaled timing', () => {
-    for (const p of SET_PAPERS) {
+    for (const p of SET_PAPERS.filter((p) => p.id !== 'set-p1a')) {
       expect(p.sections).toEqual(['reading', 'writing']);
       expect(p.questions.filter((q) => q.skill === 'reading')).toHaveLength(15);
       expect(p.minutes).toEqual({ reading: 15, writing: 10 });
     }
+  });
+
+  it('Picture set 1 is Reading Part 1 only: 5 questions, 5 minutes at the official pace', () => {
+    const p = SET_PAPERS.find((p) => p.id === 'set-p1a')!;
+    expect(p.title).toBe('Picture set 1');
+    expect(p.sections).toEqual(['reading']);
+    expect(p.groups.map((g) => g.officialPart)).toEqual(['Reading Part 1']);
+    expect(p.questions).toHaveLength(5);
+    expect(p.minutes).toEqual({ reading: 5 });
   });
 });
 
@@ -85,7 +94,7 @@ describe('HSK 1 papers', () => {
 
   it('HSK 2 paper ids are unchanged, so saved progress stays valid', async () => {
     const { setPapers, mockPapers, findPaper } = await import('../../src/features/exam/papers');
-    expect(setPapers(2).map((p) => p.id)).toEqual(['set-a', 'set-b', 'set-c']);
+    expect(setPapers(2).map((p) => p.id)).toEqual(['set-a', 'set-b', 'set-c', 'set-p1a']);
     expect(mockPapers(2).map((p) => p.id)).toEqual(['mock-1', 'mock-2', 'mock-3']);
     expect(findPaper('h1-mock-2')?.level).toBe(1);
     expect(findPaper('mock-2')?.level).toBe(2);

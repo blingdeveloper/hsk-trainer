@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { LEVELS } from '../../src/content/levels';
 
-const SETS = [...LEVELS[1].sets, ...LEVELS[2].sets];
+const SETS = [1, 2].flatMap((l) => [...LEVELS[l as 1 | 2].sets, ...LEVELS[l as 1 | 2].pictureSets]);
 import type { Question } from '../../src/content/types';
 
 // Checks every pinyin line in the practice content against CC-CEDICT readings,
@@ -24,7 +24,7 @@ const isHan = (c: string) => /\p{Script=Han}/u.test(c);
 // Sandhi: 一 and 不 change tone before other syllables.
 const SANDHI = new Set(['一', '不']);
 
-type Aligned = { cost: number; notes: string[] };
+type Aligned = { cost: number; notes: string[]; syls: string[] };
 
 /** Splits `py` into one syllable per character, preferring exact dictionary readings. */
 function align(chars: string[], py: string): Aligned | null {
@@ -34,7 +34,7 @@ function align(chars: string[], py: string): Aligned | null {
     const key = `${i},${p}`;
     if (memo.has(key)) return memo.get(key)!;
     let res: Aligned | null = null;
-    if (i === chars.length) res = p === target.length ? { cost: 0, notes: [] } : null;
+    if (i === chars.length) res = p === target.length ? { cost: 0, notes: [], syls: [] } : null;
     else {
       const c = chars[i];
       const opts = [...(readings.get(c) ?? [])];
@@ -52,13 +52,50 @@ function align(chars: string[], py: string): Aligned | null {
         }
         if (cost < 0) continue;
         const rest = go(i + 1, p + len);
-        if (rest && (!res || rest.cost + cost < res.cost)) res = { cost: rest.cost + cost, notes: note ? [note, ...rest.notes] : rest.notes };
+        if (rest && (!res || rest.cost + cost < res.cost)) res = { cost: rest.cost + cost, notes: note ? [note, ...rest.notes] : rest.notes, syls: [syl, ...rest.syls] };
       }
     }
     memo.set(key, res);
     return res;
   };
   return go(0, 0);
+}
+
+// The reading the HSK syllabus uses for each word (the data build marks it: 要 yào, not yāo; 猫 māo, not máo).
+// A rare reading can be a real dictionary entry, so matching the dictionary alone isn't enough.
+// Some words have more than one syllabus reading (只 zhī as a measure word, zhǐ "only"); any of them is accepted.
+const hskReading = new Map<string, string[][]>();
+for (const [simp, , py, , level, preferred] of dict.entries as [string, string, string, string[], number, number][]) {
+  if (!preferred || level <= 0 || level > 3) continue;
+  hskReading.set(simp, [...(hskReading.get(simp) ?? []), py.toLowerCase().split(' ')]);
+}
+const longestHskWord = Math.max(...[...hskReading.keys()].map((w) => [...w].length));
+
+/** Notes where the pinyin uses a different reading from the syllabus, word by word (longest HSK word first). */
+function syllabusReadingNotes(chars: string[], syls: string[]): string[] {
+  const notes: string[] = [];
+  for (let i = 0; i < chars.length; ) {
+    let len = Math.min(longestHskWord, chars.length - i);
+    while (len > 0 && !hskReading.has(chars.slice(i, i + len).join(''))) len--;
+    if (len === 0) {
+      i++;
+      continue;
+    }
+    const word = chars.slice(i, i + len).join('');
+    const readingsOfWord = hskReading.get(word)!;
+    const fits = (want: string[]) =>
+      want.every((w, k) => {
+        const got = syls[i + k];
+        if (!got || got === w || toneless(got) !== toneless(w)) return true; // other syllable mismatches are caught by align()
+        return SANDHI.has(chars[i + k]) || !hasTone(w) || !hasTone(got); // sandhi and neutral tone
+      });
+    if (!readingsOfWord.some(fits)) {
+      const written = syls.slice(i, i + len).join(' ');
+      notes.push(`${word} written "${written}"; the HSK syllabus reading is ${readingsOfWord.map((r) => `"${r.join(' ')}"`).join(' or ')}`);
+    }
+    i += len;
+  }
+  return notes;
 }
 
 /** Every (Chinese, pinyin) pair shown to the learner, with blanks filled by the answer. */
@@ -88,7 +125,7 @@ describe.each(SETS.map((s) => ({ ...s, name: `${LEVELS[s.level].name} ${s.title}
     const check = (where: string, text: string, py: string) => {
       const a = align([...text].filter(isHan), py);
       if (!a) problems.push(`${where}: can't match "${py}" to "${text}"`);
-      else for (const n of a.notes) problems.push(`${where}: ${n}`);
+      else for (const n of [...a.notes, ...syllabusReadingNotes([...text].filter(isHan), a.syls)]) problems.push(`${where}: ${n}`);
     };
     for (const q of set.questions) {
       const group = set.groups.find((g) => g.id === q.groupId)!;
@@ -112,5 +149,12 @@ describe('pinyin checker', () => {
     expect(run('学校', 'xuéxiāo')?.cost).toBe(1);
     expect(run('学校', 'xiéxiào')).toBeNull(); // 学 is never xié
     expect(run('我们', 'wǒ')).toBeNull();
+  });
+  it('catches a real but non-HSK reading (猫 máo exists in the dictionary; the syllabus has māo)', () => {
+    const a = run('小猫', 'xiǎo máo')!;
+    expect(a.cost).toBe(0);
+    expect(syllabusReadingNotes([...'小猫'], a.syls)).toHaveLength(1);
+    const b = run('小猫', 'xiǎo māo')!;
+    expect(syllabusReadingNotes([...'小猫'], b.syls)).toEqual([]);
   });
 });

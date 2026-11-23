@@ -3,6 +3,11 @@ import type { Option, Question, QuestionGroup, Skill } from '../../content/types
 import HandwritingPad from '../handwriting/HandwritingPad';
 import type { Paper } from './papers';
 import { isCorrect, type Answers } from './scoring';
+import { MEDIA, mediaUrlPath } from '../../content/media';
+import { assetUrl } from '../../lib/assets';
+
+/** Screen-reader text for an option: its Chinese, or what its picture shows. */
+const optionLabel = (o: Option) => (o.image ? `picture of ${MEDIA[o.image]?.alt ?? 'an image'}` : o.text);
 
 const isHan = (c: string) => /\p{Script=Han}/u.test(c);
 
@@ -39,7 +44,25 @@ function GroupBlock({ group, paper, ...rest }: Omit<SectionProps, 'skill'> & { g
         <p className="eyebrow">{group.officialPart}</p>
         <p className="text-sm text-muted">{group.instructions}</p>
       </div>
-      {group.options && (
+      {group.options?.some((o) => o.image) ? (
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="Pictures" data-testid="picture-options">
+          {group.options.map((o) => (
+            <li key={o.key} className="relative">
+              <img
+                src={assetUrl(mediaUrlPath(o.image!))}
+                alt={`${o.key}: ${MEDIA[o.image!]?.alt ?? ''}`}
+                width={800}
+                height={600}
+                loading="lazy"
+                className="aspect-[4/3] w-full rounded-2xl object-cover"
+              />
+              <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-card text-sm font-semibold shadow-[var(--shadow-soft)]" aria-hidden>
+                {o.key}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : group.options && (
         <ul className="grid grid-cols-1 gap-2 rounded-2xl bg-paper p-3 sm:grid-cols-2 lg:grid-cols-3">
           {group.options.map((o) => (
             <li key={o.key} className="flex items-baseline gap-2 rounded-xl px-2 py-1">
@@ -223,13 +246,17 @@ function QuestionItem({
                     type="button"
                     role="radio"
                     aria-checked={chosen}
-                    aria-label={`${o.key}: ${o.text}`}
+                    aria-label={`${o.key}: ${optionLabel(o)}`}
                     disabled={isLocked}
                     onClick={() => onAnswer?.(q.id, o.key)}
                     className={`choice han min-w-12 ${state} disabled:cursor-default`}
                   >
                     <span className="font-sans font-semibold">{o.key}</span>
                     {q.options && <span className="ml-1.5 text-lg">{o.text}</span>}
+                    {o.image && (
+                      // A small copy of the picture, so it can be compared without scrolling back up.
+                      <img src={assetUrl(mediaUrlPath(o.image))} alt="" aria-hidden className="ml-2 inline-block h-8 w-11 rounded-md object-cover align-middle" />
+                    )}
                   </button>
                 );
               })}

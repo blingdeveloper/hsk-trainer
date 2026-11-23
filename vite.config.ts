@@ -27,8 +27,8 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['icon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'],
       workbox: {
-        // Everything needed offline is precached on first visit (~6 MB).
-        globPatterns: ['**/*.{js,css,html,svg,json,txt,woff2}'],
+        // Everything needed offline is precached on first visit (~7 MB), including photos in public/media/.
+        globPatterns: ['**/*.{js,css,html,svg,json,txt,woff2,jpg}'],
         // Fonts: only the Latin and Latin Extended subsets are used (pinyin tone marks need Latin Extended).
         globIgnores: ['**/*-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,

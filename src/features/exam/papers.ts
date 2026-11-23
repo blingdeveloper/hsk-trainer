@@ -17,7 +17,7 @@ export interface Paper {
   minutes: Partial<Record<Skill, number>>;
 }
 
-const ALL_SETS = LEVEL_IDS.flatMap((l) => LEVELS[l].sets);
+const ALL_SETS = LEVEL_IDS.flatMap((l) => [...LEVELS[l].sets, ...LEVELS[l].pictureSets]);
 const ALL_GROUPS = new Map(ALL_SETS.flatMap((s) => s.groups).map((g) => [g.id, g]));
 const ALL_QUESTIONS = new Map(ALL_SETS.flatMap((s) => s.questions).map((q) => [q.id, q]));
 
@@ -56,8 +56,9 @@ export function buildMock(levelId: LevelId, k: number): Paper {
   return makePaper(`${paperPrefix}mock-${k + 1}`, 'mock', levelId, `Mock exam ${k + 1}`, groups, questions);
 }
 
+/** Practice papers: the level's practice sets, then its Reading Part 1 picture sets. */
 export function setPapers(levelId: LevelId): Paper[] {
-  return LEVELS[levelId].sets.map(paperFromSet);
+  return [...LEVELS[levelId].sets, ...LEVELS[levelId].pictureSets].map(paperFromSet);
 }
 
 /** One mock per set (rotations), or none while a level has fewer sets than its layout needs. */

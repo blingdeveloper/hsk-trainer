@@ -1,67 +1,19 @@
 import PageHeader from '../../ui/PageHeader';
 import { assetUrl } from '../../lib/assets';
-
-const SOURCES = [
-  {
-    name: 'CC-CEDICT',
-    use: 'Chinese–English definitions and pinyin (subset: single characters plus words made of HSK 1–3 characters)',
-    url: 'https://cc-cedict.org/',
-    licence: 'Creative Commons Attribution-ShareAlike 4.0',
-    licenceUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
-    notes: 'Changes: converted to tone-marked pinyin and filtered. The derived file packs/core/dict.json is shared under CC BY-SA 4.0.',
-  },
-  {
-    name: 'HanziLookupJS (Gábor Ugray), based on HanziLookup (Jordan Kiang)',
-    use: 'Offline handwriting recognition: code and recognition data (mmah.json)',
-    url: 'https://github.com/gugray/HanziLookupJS',
-    licence: 'GNU GPL (code); Arphic Public License (mmah.json)',
-    licenceUrl: assetUrl('vendor/hanzilookup/LICENSE-APL.txt'),
-    notes: 'Pinned to commit b21124f. Because this app includes GPL code, the app itself is licensed GPL-3.0-or-later.',
-  },
-  {
-    name: 'Hanzi Writer (David Chanin)',
-    use: 'Stroke-order animation',
-    url: 'https://hanziwriter.org/',
-    licence: 'MIT',
-    licenceUrl: 'https://github.com/chanind/hanzi-writer/blob/master/LICENSE',
-    notes: '',
-  },
-  {
-    name: 'hanzi-writer-data / Make Me a Hanzi (Shaunak Kishore), from Arphic fonts',
-    use: 'Stroke shapes and order for HSK 1–3 characters',
-    url: 'https://github.com/skishore/makemeahanzi',
-    licence: 'Arphic Public License',
-    licenceUrl: assetUrl('vendor/hanzilookup/LICENSE-APL.txt'),
-    notes: '',
-  },
-  {
-    name: 'HSK 考试大纲 (Chinese Testing International, published 2025-11, effective 2026-07)',
-    use: 'HSK 3.0 level tags, the HSK 1–2 writing-character list, and which reading of a character to show first',
-    url: 'https://www.chinesetest.cn/hsk',
-    licence: 'Copyright CTI. No open licence.',
-    licenceUrl: '',
-    notes: 'Used only for level tags and character lists, with this citation. The syllabus document is not redistributed. Check with CTI before any public release.',
-  },
-  {
-    name: 'HSK（二级）样卷 (CTI official sample paper, 2026)',
-    use: 'Reference for the exam format only (sections, question counts, timing, task types)',
-    url: 'https://www.chinesetest.cn/hsk',
-    licence: 'Copyright CTI',
-    licenceUrl: '',
-    notes: 'No official questions are included in this app. All practice questions are original.',
-  },
-];
+import { SOURCES } from '../../content/sources';
+import { MEDIA, MEDIA_LICENCES, mediaUrlPath } from '../../content/media';
 
 export default function LicencesView() {
+  const media = Object.entries(MEDIA);
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <PageHeader han="来源 · láiyuán" title="Sources & Licences">
         <p className="text-sm text-muted">
           This app is free software under the GNU GPL v3 or later. Practice questions marked "Original practice" were written for this app.
           They are not official HSK questions.
         </p>
       </PageHeader>
-      <ul className="grid gap-3 md:grid-cols-2">
+      <ul className="grid gap-3 md:grid-cols-2" data-testid="sources">
         {SOURCES.map((s) => (
           <li key={s.name} className="card text-sm">
             <h2 className="font-display text-base font-semibold">{s.name}</h2>
@@ -71,7 +23,7 @@ export default function LicencesView() {
             </p>
             <p className="mt-1">
               Source:{' '}
-              <a className="text-rose underline break-all" href={s.url}>
+              <a className="break-all text-rose underline" href={s.url}>
                 {s.url}
               </a>
             </p>
@@ -79,6 +31,39 @@ export default function LicencesView() {
           </li>
         ))}
       </ul>
+
+      {media.length > 0 && (
+        <section className="card space-y-3" aria-labelledby="photo-credits">
+          <h2 id="photo-credits" className="font-display text-lg font-semibold">
+            Photo credits
+          </h2>
+          <ul className="grid gap-4 md:grid-cols-2" data-testid="photo-credits">
+            {media.map(([id, m]) => (
+              <li key={id} className="flex gap-3 text-sm">
+                <img src={assetUrl(mediaUrlPath(id))} alt={m.alt} loading="lazy" className="aspect-[4/3] w-24 shrink-0 self-start rounded-lg object-cover" />
+                <div className="min-w-0 space-y-1">
+                  <p>
+                    Photo by{' '}
+                    <a className="text-rose underline" href={m.authorUrl}>
+                      {m.author}
+                    </a>{' '}
+                    on{' '}
+                    <a className="text-rose underline" href={m.sourceUrl}>
+                      Unsplash
+                    </a>
+                  </p>
+                  <p className="text-xs text-muted">
+                    <a className="underline" href={MEDIA_LICENCES[m.licence].url}>
+                      {m.licence}
+                    </a>{' '}
+                    · downloaded {m.downloaded} · {m.changes}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

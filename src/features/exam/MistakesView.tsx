@@ -1,6 +1,6 @@
 import PageHeader from '../../ui/PageHeader';
 import { useEffect, useMemo, useState } from 'react';
-import type { TaskType } from '../../content/types';
+import type { Option, TaskType } from '../../content/types';
 import { db } from '../../db/db';
 import { href } from '../../lib/router';
 import { newExam } from './ExamRunner';
@@ -9,6 +9,8 @@ import { groupById, paperFromMistakes, questionById } from './papers';
 import { useLevel } from '../../lib/useSettings';
 import LevelSwitch from '../../ui/LevelSwitch';
 import { Feedback } from './QuestionViews';
+import { MEDIA, mediaUrlPath } from '../../content/media';
+import { assetUrl } from '../../lib/assets';
 
 /** Mistake notebook: every question whose latest answer was wrong, grouped by error category. */
 export default function MistakesView() {
@@ -114,6 +116,20 @@ function FilterChip({ active, onClick, label }: { active: boolean; onClick: () =
   );
 }
 
+/** A small labelled picture for Reading Part 1 mistakes. */
+function PictureChoice({ option, label, tone }: { option?: Option; label: string; tone: string }) {
+  if (!option?.image) return null;
+  const item = MEDIA[option.image];
+  return (
+    <figure className="w-36">
+      <img src={assetUrl(mediaUrlPath(option.image))} alt={item?.alt ?? ''} className="aspect-[4/3] w-full rounded-xl object-cover" loading="lazy" />
+      <figcaption className={`mt-1 ${tone}`}>
+        {label}: {option.key}
+      </figcaption>
+    </figure>
+  );
+}
+
 function MistakeCard({ m, fixed = false }: { m: MistakeSummary; fixed?: boolean }) {
   const q = questionById(m.questionId)!;
   const group = groupById(q.groupId);
@@ -145,7 +161,12 @@ function MistakeCard({ m, fixed = false }: { m: MistakeSummary; fixed?: boolean 
           )}
         </>
       )}
-      {options.length > 0 && (
+      {options.some((o) => o.image) ? (
+        <div className="flex flex-wrap gap-3 text-sm" data-testid="mistake-pictures">
+          {m.lastAnswer && <PictureChoice option={options.find((o) => o.key === m.lastAnswer)} label="Your answer" tone="text-bad" />}
+          <PictureChoice option={options.find((o) => o.key === q.correctAnswer)} label="Answer" tone="text-good" />
+        </div>
+      ) : options.length > 0 && (
         <p className="han text-sm" lang="zh-CN">
           {m.lastAnswer && <span className="text-bad">Your answer: {m.lastAnswer} {optionText(m.lastAnswer)} · </span>}
           <span className="text-good">
